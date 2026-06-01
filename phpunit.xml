@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         failOnRisky="true"
+         failOnWarning="true">
+
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <!-- Décommentez pour les tests fonctionnels (nécessite Elasticsearch actif) -->
+        <!--
+        <testsuite name="Functional">
+            <directory>tests/Functional</directory>
+        </testsuite>
+        -->
+    </testsuites>
+
+    <!--
+    Extension à activer dans les projets consommateurs de la lib :
+
+    <extensions>
+        <bootstrap class="Podoko\ElasticsearchDama\PHPUnit\ElasticsearchDamaExtension">
+            <parameter name="force-refresh" value="true"/>
+            <parameter name="reset-strategy" value="clone"/>
+        </bootstrap>
+    </extensions>
+    -->
+
+    <source>
+        <include>
+            <directory>src</directory>
+        </include>
+    </source>
+
+</phpunit>
