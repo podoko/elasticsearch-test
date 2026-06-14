@@ -60,11 +60,19 @@ final class CloneResetStrategy implements ResetStrategyInterface
             $body['mappings'] = $this->indexMappings[$indexName];
         }
 
-        $this->adminClient->request(
-            $seedName,
-            Request::PUT,
-            $body,
-        );
+        // La création n'est pas atomique : deux workers ParaTest peuvent arriver ici
+        // simultanément. On ignore l'erreur 400 "resource_already_exists_exception"
+        // (un autre worker a gagné la race) et on laisse ce worker cloner le seed
+        // créé par l'autre.
+        try {
+            $this->adminClient->request($seedName, Request::PUT, $body);
+        } catch (ResponseException $e) {
+            if ($e->getResponse()->getStatus() !== 400) {
+                throw $e;
+            }
+            // Race gagnée par un autre worker — le seed existe, on sort.
+            return;
+        }
 
         // Peuplement via callback si fourni.
         if ($this->seedCallback !== null) {

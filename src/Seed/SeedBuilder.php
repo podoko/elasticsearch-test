@@ -46,8 +46,8 @@ final class SeedBuilder
 
             foreach ($fixtures as $i => $document) {
                 $id = $document['id'] ?? ((string) ($i + 1));
-                $bulkBody .= \json_encode(['index' => ['_index' => $seedIndexName, '_id' => $id]]) . "\n";
-                $bulkBody .= \json_encode($document) . "\n";
+                $bulkBody .= \json_encode(['index' => ['_index' => $seedIndexName, '_id' => $id]], \JSON_THROW_ON_ERROR) . "\n";
+                $bulkBody .= \json_encode($document, \JSON_THROW_ON_ERROR) . "\n";
             }
 
             $client->request(
