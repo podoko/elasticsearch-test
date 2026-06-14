@@ -2,6 +2,7 @@
 /.phpunit.result.cache
 /.phpunit.cache/
 /var/
+/tests/Functional/App/var/
 /.env.local
 /.env.test.local
 

@@ -15,6 +15,15 @@ use Symfony\Component\DependencyInjection\Reference;
 
 final class PodokoElasticsearchDamaExtension extends Extension
 {
+    /**
+     * Override de l'alias pour correspondre au préfixe YAML "elasticsearch_dama:".
+     * Sans cette méthode, Symfony calcule "podoko_elasticsearch_dama" depuis le nom de classe.
+     */
+    public function getAlias(): string
+    {
+        return 'elasticsearch_dama';
+    }
+
     public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = new Configuration();
@@ -33,15 +42,23 @@ final class PodokoElasticsearchDamaExtension extends Extension
         // Client admin brut — utilisé par CloneResetStrategy pour les opérations
         // structurelles (clone, delete, refresh seed...). Distinct du client FOSElastica
         // pour ne jamais être redirigé vers les index de travail suffixés.
+        //
+        // Elastica v7 Transport\Http construit l'URL finale par concaténation :
+        //   baseUri . requestPath
+        // → la baseUri DOIT se terminer par '/' pour éviter des URL incorrectes.
         // -----------------------------------------------------------------------
         $adminClientDef = new Definition(Client::class);
         $adminClientDef->setArguments([[
-            'host' => $config['elasticsearch_url'],
+            // Le trailing '/' est obligatoire : Elastica concatène directement requestPath
+            // à cette baseUri (ex: 'http://localhost:9200' + 'posts_seed' sans slash).
+            // Symfony résout %env(ELASTICSEARCH_URL)% à runtime → 'http://localhost:9200/'
+            'url' => $config['elasticsearch_url'] . '/',
         ]]);
         $container->setDefinition('elasticsearch_dama.admin_client', $adminClientDef);
 
         // -----------------------------------------------------------------------
-        // SeedBuilder
+        // SeedBuilder — construit le callback de peuplement des seeds depuis les
+        // fixtures déclarées dans elasticsearch_dama.yaml.
         // -----------------------------------------------------------------------
         $seedBuilderDef = new Definition(SeedBuilder::class);
         $seedBuilderDef->setArguments([
@@ -51,14 +68,28 @@ final class PodokoElasticsearchDamaExtension extends Extension
         $container->setDefinition('elasticsearch_dama.seed_builder', $seedBuilderDef);
 
         // -----------------------------------------------------------------------
+        // seed_callback — Closure retournée par SeedBuilder::buildGlobalCallback().
+        // Définie comme service "factory" : Symfony appelle la méthode à l'instanciation
+        // et stocke le Closure résultant. Injectée dans CloneResetStrategy.
+        // -----------------------------------------------------------------------
+        $seedCallbackDef = new Definition(\Closure::class);
+        $seedCallbackDef->setFactory([new Reference('elasticsearch_dama.seed_builder'), 'buildGlobalCallback']);
+        $container->setDefinition('elasticsearch_dama.seed_callback', $seedCallbackDef);
+
+        // -----------------------------------------------------------------------
         // ResetStrategy (clone par défaut)
         // -----------------------------------------------------------------------
         $this->registerResetStrategy($container, $config);
 
         // -----------------------------------------------------------------------
         // StaticStateInitializer — alimente StaticState au boot du kernel.
+        //
+        // Rendu public pour que PodokoElasticsearchDamaBundle::boot() puisse le
+        // récupérer via $this->container->get(...) et forcer son instanciation
+        // (le constructeur appelle StaticState::initialize()).
         // -----------------------------------------------------------------------
         $initializerDef = new Definition(StaticStateInitializer::class);
+        $initializerDef->setPublic(true);
         $initializerDef->setArguments([
             new Reference('elasticsearch_dama.admin_client'),
             '%elasticsearch_dama.managed_indexes%',
@@ -78,9 +109,9 @@ final class PodokoElasticsearchDamaExtension extends Extension
             $def = new Definition(CloneResetStrategy::class);
             $def->setArguments([
                 new Reference('elasticsearch_dama.admin_client'),
-                null,  // seedCallback — null = seed vide (les fixtures passent par SeedBuilder)
-                [],    // indexMappings
-                [],    // indexSettings
+                new Reference('elasticsearch_dama.seed_callback'),  // A2 : callback branché
+                [],    // indexMappings — injecté par FosClientDecoratorPass (A3)
+                [],    // indexSettings — injecté par FosClientDecoratorPass (A3)
             ]);
             $container->setDefinition('elasticsearch_dama.reset_strategy', $def);
         }

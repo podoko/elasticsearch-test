@@ -14,10 +14,19 @@ final class StaticStateTest extends TestCase
 {
     private MockObject&ResetStrategyInterface $strategy;
 
+    private string|false $savedTestToken;
+    private string|false $savedUniqueTestToken;
+
     protected function setUp(): void
     {
+        $this->savedTestToken       = \getenv('TEST_TOKEN');
+        $this->savedUniqueTestToken = \getenv('UNIQUE_TEST_TOKEN');
+
         StaticState::reset();
         TestToken::reset();
+        \putenv('TEST_TOKEN');
+        \putenv('UNIQUE_TEST_TOKEN');
+
         $this->strategy = $this->createMock(ResetStrategyInterface::class);
     }
 
@@ -25,6 +34,14 @@ final class StaticStateTest extends TestCase
     {
         StaticState::reset();
         TestToken::reset();
+
+        $this->savedTestToken !== false
+            ? \putenv('TEST_TOKEN=' . $this->savedTestToken)
+            : \putenv('TEST_TOKEN');
+
+        $this->savedUniqueTestToken !== false
+            ? \putenv('UNIQUE_TEST_TOKEN=' . $this->savedUniqueTestToken)
+            : \putenv('UNIQUE_TEST_TOKEN');
     }
 
     public function test_throws_when_not_initialized(): void

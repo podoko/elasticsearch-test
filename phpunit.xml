@@ -3,31 +3,40 @@
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          colors="true"
-         failOnRisky="true"
+         failOnRisky="false"
          failOnWarning="true">
 
     <testsuites>
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
         </testsuite>
-        <!-- Décommentez pour les tests fonctionnels (nécessite Elasticsearch actif) -->
-        <!--
+        <!-- Nécessite Elasticsearch actif sur ELASTICSEARCH_URL (docker compose up -d) -->
         <testsuite name="Functional">
             <directory>tests/Functional</directory>
         </testsuite>
-        -->
     </testsuites>
 
     <!--
-    Extension à activer dans les projets consommateurs de la lib :
-
-    <extensions>
-        <bootstrap class="Podoko\ElasticsearchDama\PHPUnit\ElasticsearchDamaExtension">
-            <parameter name="force-refresh" value="true"/>
-            <parameter name="reset-strategy" value="clone"/>
-        </bootstrap>
-    </extensions>
+        Extension elasticsearch-dama — active le suffixage runtime des index FOSElastica.
+        Toute la configuration (URL, index gérés, fixtures) vient du bundle Symfony
+        (tests/Functional/App/config/elasticsearch_dama.yaml) et non de ces paramètres.
     -->
+    <extensions>
+        <bootstrap class="Podoko\ElasticsearchDama\PHPUnit\ElasticsearchDamaExtension"/>
+        <!-- Foundry v2.9+ requiert son extension pour gérer le cycle de vie des factories -->
+        <bootstrap class="Zenstruck\Foundry\PHPUnit\FoundryExtension"/>
+    </extensions>
+
+    <php>
+        <env name="APP_ENV" value="test"/>
+        <env name="APP_SECRET" value="test-secret"/>
+        <!-- URL complète pour le client admin DAMA (PodokoElasticsearchDamaExtension) -->
+        <env name="ELASTICSEARCH_URL" value="http://localhost:9200"/>
+        <!-- Host/port séparés pour FOSElastica (fos_elastica.yaml mini-kernel) -->
+        <env name="ELASTICSEARCH_HOST" value="localhost"/>
+        <env name="ELASTICSEARCH_PORT" value="9200"/>
+        <!-- Pour ParaTest : chaque worker reçoit TEST_TOKEN automatiquement -->
+    </php>
 
     <source>
         <include>

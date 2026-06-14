@@ -9,16 +9,30 @@ use Podoko\ElasticsearchDama\TestToken;
 
 final class TestTokenTest extends TestCase
 {
+    private string|false $savedTestToken;
+    private string|false $savedUniqueTestToken;
+
     protected function setUp(): void
     {
+        $this->savedTestToken       = \getenv('TEST_TOKEN');
+        $this->savedUniqueTestToken = \getenv('UNIQUE_TEST_TOKEN');
+
         TestToken::reset();
+        \putenv('TEST_TOKEN');
+        \putenv('UNIQUE_TEST_TOKEN');
     }
 
     protected function tearDown(): void
     {
         TestToken::reset();
-        \putenv('TEST_TOKEN');
-        \putenv('UNIQUE_TEST_TOKEN');
+
+        $this->savedTestToken !== false
+            ? \putenv('TEST_TOKEN=' . $this->savedTestToken)
+            : \putenv('TEST_TOKEN');
+
+        $this->savedUniqueTestToken !== false
+            ? \putenv('UNIQUE_TEST_TOKEN=' . $this->savedUniqueTestToken)
+            : \putenv('UNIQUE_TEST_TOKEN');
     }
 
     public function test_default_token_is_one(): void

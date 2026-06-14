@@ -79,8 +79,10 @@ final class StaticState
     }
 
     /**
-     * Appelé par TestRunnerStartedSubscriber (une fois par processus PHPUnit/worker) :
-     * construit le seed si inexistant.
+     * Construit le seed si inexistant (une fois par processus).
+     * Peut être appelé manuellement dans un setUpBeforeClass() si besoin de garantir
+     * l'existence du seed avant le premier test (dans le cadre normal, le seed est
+     * créé paresseusement lors du premier appel à prepare()).
      */
     public static function ensureSeedExists(): void
     {
