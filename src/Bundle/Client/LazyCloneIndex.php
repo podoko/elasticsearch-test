@@ -15,7 +15,7 @@ use Podoko\ElasticsearchDama\TestToken;
 /**
  * Proxy d'index à clonage paresseux.
  *
- * Par défaut, redirige toutes les opérations vers l'index seed (posts_seed).
+ * Par défaut, redirige toutes les opérations vers l'index source préexistant (posts).
  * Lors de la première opération d'écriture, déclenche la copie via StaticState::copy()
  * puis redirige toutes les opérations (lecture et écriture) vers le clone worker (posts_<token>).
  *
@@ -42,7 +42,7 @@ class LazyCloneIndex extends FosIndex
             return $this->logicalName . '_' . TestToken::get();
         }
 
-        return $this->logicalName . '_seed';
+        return $this->logicalName;
     }
 
     // -----------------------------------------------------------------------

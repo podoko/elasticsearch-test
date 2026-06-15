@@ -22,78 +22,51 @@ final class CloneResetStrategyTest extends TestCase
         $this->strategy = new CloneResetStrategy($this->client);
     }
 
-    public function test_seed_name_format(): void
-    {
-        self::assertSame('posts_seed', CloneResetStrategy::seedName('posts'));
-    }
-
     public function test_worker_name_format(): void
     {
         self::assertSame('posts_2', CloneResetStrategy::workerName('posts', '2'));
     }
 
-    public function test_seed_creates_index_and_blocks_writes_when_not_existing(): void
+    public function test_prepare_write_blocks_source_before_clone(): void
     {
-        // HEAD → 404 (n'existe pas)
-        $notFound = new Response('', 404);
-        $ok       = new Response('{}', 200);
-
-        $this->client
-            ->expects($this->exactly(3))
-            ->method('request')
-            ->willReturnCallback(function (string $path, string $method) use ($notFound, $ok): Response {
-                if ($method === Request::HEAD) {
-                    return $notFound;
-                }
-
-                return $ok;
-            });
-
-        $this->strategy->seed('posts');
-    }
-
-    public function test_seed_is_noop_when_already_existing(): void
-    {
-        $existing = new Response('{}', 200);
-
-        $this->client
-            ->expects($this->once()) // Seulement le HEAD
-            ->method('request')
-            ->with('posts_seed', Request::HEAD)
-            ->willReturn($existing);
-
-        $this->strategy->seed('posts');
-    }
-
-    public function test_prepare_clones_seed_to_worker_index(): void
-    {
-        $existing    = new Response('{}', 200);
-        $notFound    = new Response('', 404);
-        $cloneOk     = new Response('{}', 200);
-        $healthOk    = new Response('{}', 200);
-
         $calls = [];
 
         $this->client
             ->method('request')
             ->willReturnCallback(
-                function (string $path, string $method) use ($existing, $notFound, $cloneOk, $healthOk, &$calls): Response {
+                function (string $path, string $method, array $body = []) use (&$calls): Response {
+                    $calls[] = [$path, $method, $body];
+
+                    // HEAD posts_1 → 404 (pas de clone résiduel)
+                    if ($method === Request::HEAD) {
+                        return new Response('', 404);
+                    }
+
+                    return new Response('{}', 200);
+                }
+            );
+
+        $this->strategy->prepare('posts', '1');
+
+        // Le write-block doit être le premier appel PUT, avant le _clone.
+        $putCalls = \array_values(\array_filter($calls, static fn ($c) => $c[1] === Request::PUT));
+        self::assertNotEmpty($putCalls);
+        self::assertSame('posts/_settings', $putCalls[0][0]);
+        self::assertTrue($putCalls[0][2]['index']['blocks']['write']);
+    }
+
+    public function test_prepare_clones_source_to_worker_index(): void
+    {
+        $calls = [];
+
+        $this->client
+            ->method('request')
+            ->willReturnCallback(
+                function (string $path, string $method) use (&$calls): Response {
                     $calls[] = [$path, $method];
 
-                    if ($method === Request::HEAD && $path === 'posts_seed') {
-                        return $existing;  // Le seed existe
-                    }
-
-                    if ($method === Request::HEAD && $path === 'posts_1') {
-                        return $notFound;  // Le clone n'existe pas
-                    }
-
-                    if (\str_contains($path, '_clone')) {
-                        return $cloneOk;
-                    }
-
-                    if (\str_contains($path, '_cluster/health')) {
-                        return $healthOk;
+                    if ($method === Request::HEAD) {
+                        return new Response('', 404); // clone résiduel absent
                     }
 
                     return new Response('{}', 200);
@@ -103,20 +76,100 @@ final class CloneResetStrategyTest extends TestCase
         $this->strategy->prepare('posts', '1');
 
         $paths = \array_column($calls, 0);
-        self::assertContains('posts_seed/_clone/posts_1', $paths);
+        self::assertContains('posts/_clone/posts_1', $paths);
+    }
+
+    public function test_prepare_deletes_residual_clone_before_cloning(): void
+    {
+        $calls = [];
+
+        $this->client
+            ->method('request')
+            ->willReturnCallback(
+                function (string $path, string $method) use (&$calls): Response {
+                    $calls[] = [$path, $method];
+
+                    if ($method === Request::HEAD) {
+                        return new Response('{}', 200); // clone résiduel présent
+                    }
+
+                    return new Response('{}', 200);
+                }
+            );
+
+        $this->strategy->prepare('posts', '1');
+
+        $paths = \array_column($calls, 0);
+        self::assertContains('posts_1', $paths); // DELETE du résiduel
+        self::assertContains('posts/_clone/posts_1', $paths);
     }
 
     public function test_cleanup_deletes_worker_index(): void
     {
-        $existing = new Response('{}', 200);
+        $calls = [];
 
         $this->client
-            ->expects($this->exactly(2))
             ->method('request')
-            ->willReturnCallback(function (string $path, string $method) use ($existing): Response {
-                return $existing;
-            });
+            ->willReturnCallback(
+                function (string $path, string $method) use (&$calls): Response {
+                    $calls[] = [$path, $method];
+
+                    return new Response('{}', 200);
+                }
+            );
 
         $this->strategy->cleanup('posts', '1');
+
+        $deleteCalls = \array_values(\array_filter($calls, static fn ($c) => $c[1] === Request::DELETE));
+        self::assertNotEmpty($deleteCalls);
+        self::assertSame('posts_1', $deleteCalls[0][0]);
+    }
+
+    public function test_cleanup_is_noop_when_worker_index_absent(): void
+    {
+        $this->client
+            ->expects($this->once()) // uniquement le HEAD
+            ->method('request')
+            ->with('posts_1', Request::HEAD)
+            ->willReturn(new Response('', 404));
+
+        $this->strategy->cleanup('posts', '1');
+    }
+
+    public function test_unlock_source_removes_write_block(): void
+    {
+        $calls = [];
+
+        $this->client
+            ->method('request')
+            ->willReturnCallback(
+                function (string $path, string $method, array $body = []) use (&$calls): Response {
+                    $calls[] = [$path, $method, $body];
+
+                    if ($method === Request::HEAD) {
+                        return new Response('{}', 200); // index existe
+                    }
+
+                    return new Response('{}', 200);
+                }
+            );
+
+        $this->strategy->unlockSource('posts');
+
+        $putCalls = \array_values(\array_filter($calls, static fn ($c) => $c[1] === Request::PUT));
+        self::assertNotEmpty($putCalls);
+        self::assertSame('posts/_settings', $putCalls[0][0]);
+        self::assertFalse($putCalls[0][2]['index']['blocks']['write']);
+    }
+
+    public function test_unlock_source_is_noop_when_index_absent(): void
+    {
+        $this->client
+            ->expects($this->once()) // uniquement le HEAD
+            ->method('request')
+            ->with('posts', Request::HEAD)
+            ->willReturn(new Response('', 404));
+
+        $this->strategy->unlockSource('posts');
     }
 }

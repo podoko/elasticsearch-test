@@ -96,17 +96,24 @@ final class StaticState
     }
 
     /**
-     * Construit le seed si inexistant (une fois par processus).
-     * Peut être appelé manuellement dans un setUpBeforeClass() si besoin de garantir
-     * l'existence du seed avant le premier test (dans le cadre normal, le seed est
-     * créé paresseusement lors du premier appel à prepare()).
+     * Retire le write-block posé sur tous les index sources.
+     * Appelé en fin de suite (propre), au boot suivant (SIGKILL recovery)
+     * et via register_shutdown_function (dd()/exit()).
+     *
+     * Sans effet si StaticState n'est pas initialisé (guard crash avant init).
+     * N'est pas exécuté sous ParaTest — chaque worker conserve le write-block
+     * jusqu'au prochain boot kernel, évitant toute race condition entre workers.
      */
-    public static function ensureSeedExists(): void
+    public static function unlockSourceIndexes(): void
     {
-        self::assertInitialized();
+        if (!self::$initialized) {
+            return;
+        }
+
+        $strategy = self::$resetStrategy;
 
         foreach (self::$managedIndexes as $indexName) {
-            self::$resetStrategy->seed($indexName);
+            $strategy->unlockSource($indexName);
         }
     }
 

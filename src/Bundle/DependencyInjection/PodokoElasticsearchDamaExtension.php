@@ -6,7 +6,6 @@ namespace Podoko\ElasticsearchDama\Bundle\DependencyInjection;
 
 use Elastica\Client;
 use Podoko\ElasticsearchDama\Reset\CloneResetStrategy;
-use Podoko\ElasticsearchDama\Seed\SeedBuilder;
 use Podoko\ElasticsearchDama\StaticStateInitializer;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -36,11 +35,10 @@ final class PodokoElasticsearchDamaExtension extends Extension
         $container->setParameter('elasticsearch_dama.elasticsearch_url', $config['elasticsearch_url']);
         $container->setParameter('elasticsearch_dama.managed_indexes', $config['managed_indexes']);
         $container->setParameter('elasticsearch_dama.reset_strategy', $config['reset_strategy']);
-        $container->setParameter('elasticsearch_dama.seed_fixtures', $config['seed']['fixtures'] ?? []);
 
         // -----------------------------------------------------------------------
         // Client admin brut — utilisé par CloneResetStrategy pour les opérations
-        // structurelles (clone, delete, refresh seed...). Distinct du client FOSElastica
+        // structurelles (clone, delete, refresh…). Distinct du client FOSElastica
         // pour ne jamais être redirigé vers les index de travail suffixés.
         //
         // Elastica v7 Transport\Http construit l'URL finale par concaténation :
@@ -49,32 +47,9 @@ final class PodokoElasticsearchDamaExtension extends Extension
         // -----------------------------------------------------------------------
         $adminClientDef = new Definition(Client::class);
         $adminClientDef->setArguments([[
-            // Le trailing '/' est obligatoire : Elastica concatène directement requestPath
-            // à cette baseUri (ex: 'http://localhost:9200' + 'posts_seed' sans slash).
-            // Symfony résout %env(ELASTICSEARCH_URL)% à runtime → 'http://localhost:9200/'
             'url' => $config['elasticsearch_url'] . '/',
         ]]);
         $container->setDefinition('elasticsearch_dama.admin_client', $adminClientDef);
-
-        // -----------------------------------------------------------------------
-        // SeedBuilder — construit le callback de peuplement des seeds depuis les
-        // fixtures déclarées dans elasticsearch_dama.yaml.
-        // -----------------------------------------------------------------------
-        $seedBuilderDef = new Definition(SeedBuilder::class);
-        $seedBuilderDef->setArguments([
-            new Reference('elasticsearch_dama.admin_client'),
-            '%elasticsearch_dama.seed_fixtures%',
-        ]);
-        $container->setDefinition('elasticsearch_dama.seed_builder', $seedBuilderDef);
-
-        // -----------------------------------------------------------------------
-        // seed_callback — Closure retournée par SeedBuilder::buildGlobalCallback().
-        // Définie comme service "factory" : Symfony appelle la méthode à l'instanciation
-        // et stocke le Closure résultant. Injectée dans CloneResetStrategy.
-        // -----------------------------------------------------------------------
-        $seedCallbackDef = new Definition(\Closure::class);
-        $seedCallbackDef->setFactory([new Reference('elasticsearch_dama.seed_builder'), 'buildGlobalCallback']);
-        $container->setDefinition('elasticsearch_dama.seed_callback', $seedCallbackDef);
 
         // -----------------------------------------------------------------------
         // ResetStrategy (clone par défaut)
@@ -109,9 +84,6 @@ final class PodokoElasticsearchDamaExtension extends Extension
             $def = new Definition(CloneResetStrategy::class);
             $def->setArguments([
                 new Reference('elasticsearch_dama.admin_client'),
-                new Reference('elasticsearch_dama.seed_callback'),  // A2 : callback branché
-                [],    // indexMappings — injecté par FosClientDecoratorPass (A3)
-                [],    // indexSettings — injecté par FosClientDecoratorPass (A3)
             ]);
             $container->setDefinition('elasticsearch_dama.reset_strategy', $def);
         }

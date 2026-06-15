@@ -10,6 +10,7 @@ use PHPUnit\Runner\Extension\ParameterCollection;
 use PHPUnit\TextUI\Configuration\Configuration;
 use Podoko\ElasticsearchDama\PHPUnit\Subscriber\TestFinishedSubscriber;
 use Podoko\ElasticsearchDama\PHPUnit\Subscriber\TestPreparedSubscriber;
+use Podoko\ElasticsearchDama\PHPUnit\Subscriber\TestSuiteFinishedSubscriber;
 
 /**
  * Extension PHPUnit 11 — point d'entrée de la librairie.
@@ -58,6 +59,7 @@ final class ElasticsearchDamaExtension implements Extension
         $facade->registerSubscribers(
             new TestPreparedSubscriber(),
             new TestFinishedSubscriber(),
+            new TestSuiteFinishedSubscriber(),
         );
     }
 }

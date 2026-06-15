@@ -27,9 +27,17 @@ final class StaticStateInitializer
             elasticsearchUrl: $this->elasticsearchUrl,
         );
 
-        // Le clonage est désormais paresseux (déclenché à la première écriture via LazyCloneIndex).
-        // Les lectures vont directement sur le seed (posts_seed) — il doit exister avant le
-        // premier accès en lecture. On le garantit ici au boot du kernel, avant tout test.
-        StaticState::ensureSeedExists();
+        // Sous ParaTest, on évite le unlock entre les tests (race condition : Worker A
+        // pourrait déverrouiller la source pendant que Worker B est entre write-block et clone).
+        // Le setUpBeforeClass() appelle explicitement unlockSourceIndexes() avant tout test.
+        if (\getenv('PARATEST') === false) {
+            // Crash recovery : retire tout write-block résiduel d'une run précédente (SIGKILL).
+            StaticState::unlockSourceIndexes();
+
+            // Unlock en fin de suite propre (sortie normale ou dd()/exit()).
+            \register_shutdown_function(static function (): void {
+                StaticState::unlockSourceIndexes();
+            });
+        }
     }
 }

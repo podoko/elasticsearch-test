@@ -9,106 +9,49 @@ use Elastica\Exception\ResponseException;
 use Elastica\Request;
 
 /**
- * Stratégie B1 — Clone depuis un seed figé.
+ * Stratégie clone — copie depuis l'index source préexistant.
+ *
+ * L'utilisateur est responsable de créer et peupler ses index avant la suite
+ * (via fos:elastica:populate, fixtures Symfony, setUpBeforeClass…).
  *
  * Cycle de vie :
- *   seed()    → crée <index>_seed (mappings + fixtures, write-bloqué)
- *   prepare() → bloque les écritures sur le seed (idempotent), puis _clone
- *               vers <index>_<token>, retire le write-block sur le clone
- *   cleanup() → supprime <index>_<token>
- *
- * Le seed est partagé entre tous les workers (clones concurrents depuis
- * un index write-blocked = safe selon la doc ES).
+ *   prepare()       → write-block idempotent sur <index>, puis _clone vers <index>_<token>
+ *   cleanup()       → supprime <index>_<token>
+ *   unlockSource()  → retire le write-block sur <index> (fin de suite ou crash recovery)
  */
 final class CloneResetStrategy implements ResetStrategyInterface
 {
-    /**
-     * @param Client            $adminClient  Client Elastica brut (pas le client FOSElastica décoré).
-     * @param \Closure|null     $seedCallback Fonction qui peuple le seed : reçoit (Client $client, string $seedIndexName).
-     *                                        Si null, le seed est créé vide (mappings uniquement).
-     * @param array<string, array<string, mixed>> $indexMappings Mappings Elastica par nom logique d'index.
-     * @param array<string, array<string, mixed>> $indexSettings Settings ES par nom logique d'index.
-     */
     public function __construct(
         private readonly Client $adminClient,
-        private readonly ?\Closure $seedCallback = null,
-        private readonly array $indexMappings = [],
-        private readonly array $indexSettings = [],
     ) {}
 
     // -----------------------------------------------------------------------
     // ResetStrategyInterface
     // -----------------------------------------------------------------------
 
-    public function seed(string $indexName): void
-    {
-        $seedName = $this->seedName($indexName);
-
-        // Si le seed existe déjà (processus parallèle ou rejeu), on ne touche à rien.
-        if ($this->indexExists($seedName)) {
-            return;
-        }
-
-        // Création du seed.
-        $body = [];
-
-        if (isset($this->indexSettings[$indexName])) {
-            $body['settings'] = $this->indexSettings[$indexName];
-        }
-
-        if (isset($this->indexMappings[$indexName])) {
-            $body['mappings'] = $this->indexMappings[$indexName];
-        }
-
-        // La création n'est pas atomique : deux workers ParaTest peuvent arriver ici
-        // simultanément. On ignore l'erreur 400 "resource_already_exists_exception"
-        // (un autre worker a gagné la race) et on laisse ce worker cloner le seed
-        // créé par l'autre.
-        try {
-            $this->adminClient->request($seedName, Request::PUT, $body);
-        } catch (ResponseException $e) {
-            if ($e->getResponse()->getStatus() !== 400) {
-                throw $e;
-            }
-            // Race gagnée par un autre worker — le seed existe, on sort.
-            return;
-        }
-
-        // Peuplement via callback si fourni.
-        if ($this->seedCallback !== null) {
-            ($this->seedCallback)($this->adminClient, $seedName);
-
-            // Refresh pour que les fixtures soient visibles dans le clone.
-            $this->adminClient->request("$seedName/_refresh", Request::POST);
-        }
-
-        // Bloquer les écritures sur le seed pour permettre les clones concurrents.
-        $this->blockWrites($seedName);
-    }
-
     public function prepare(string $indexName, string $token): void
     {
-        $seedName   = $this->seedName($indexName);
-        $targetName = $this->workerName($indexName, $token);
+        $targetName = self::workerName($indexName, $token);
 
-        // Assure que le seed existe (cas où seed() n'a pas encore été appelé).
-        if (!$this->indexExists($seedName)) {
-            $this->seed($indexName);
-        }
+        // Write-block idempotent sur la source (requis par _clone, safe en parallèle).
+        $this->adminClient->request(
+            "$indexName/_settings",
+            Request::PUT,
+            ['index' => ['blocks' => ['write' => true]]],
+        );
 
-        // Supprime un éventuel index de travail résiduel (crash précédent).
+        // Supprime un clone résiduel éventuel (crash précédent).
         if ($this->indexExists($targetName)) {
             $this->adminClient->request($targetName, Request::DELETE);
         }
 
-        // Clone le seed vers l'index de travail.
+        // Clone source → worker (writable immédiatement).
         $this->adminClient->request(
-            "$seedName/_clone/$targetName",
+            "$indexName/_clone/$targetName",
             Request::POST,
             ['settings' => ['index.blocks.write' => false]],
         );
 
-        // Attendre que le clone soit vert (la plupart du temps instantané en mono-nœud).
         $this->adminClient->request(
             "_cluster/health/$targetName",
             Request::GET,
@@ -119,34 +62,33 @@ final class CloneResetStrategy implements ResetStrategyInterface
 
     public function cleanup(string $indexName, string $token): void
     {
-        $targetName = $this->workerName($indexName, $token);
+        $targetName = self::workerName($indexName, $token);
 
         if ($this->indexExists($targetName)) {
             $this->adminClient->request($targetName, Request::DELETE);
         }
     }
 
+    public function unlockSource(string $indexName): void
+    {
+        if (!$this->indexExists($indexName)) {
+            return;
+        }
+
+        $this->adminClient->request(
+            "$indexName/_settings",
+            Request::PUT,
+            ['index' => ['blocks' => ['write' => false]]],
+        );
+    }
+
     // -----------------------------------------------------------------------
     // Helpers
     // -----------------------------------------------------------------------
 
-    public static function seedName(string $indexName): string
-    {
-        return $indexName . '_seed';
-    }
-
     public static function workerName(string $indexName, string $token): string
     {
         return $indexName . '_' . $token;
-    }
-
-    private function blockWrites(string $indexName): void
-    {
-        $this->adminClient->request(
-            "$indexName/_settings",
-            Request::PUT,
-            ['index' => ['blocks' => ['write' => true]]],
-        );
     }
 
     private function indexExists(string $indexName): bool

@@ -136,15 +136,25 @@ final class StaticStateTest extends TestCase
         self::assertFalse(StaticState::hasCopy('posts'));
     }
 
-    public function test_ensure_seed_exists_calls_seed_for_each_index(): void
+    public function test_unlock_source_indexes_calls_unlock_for_each_managed_index(): void
     {
         $this->initialize(['posts', 'tags']);
 
         $this->strategy
             ->expects($this->exactly(2))
-            ->method('seed');
+            ->method('unlockSource');
 
-        StaticState::ensureSeedExists();
+        StaticState::unlockSourceIndexes();
+    }
+
+    public function test_unlock_source_indexes_is_noop_when_not_initialized(): void
+    {
+        // StaticState non initialisé — ne doit pas lever d'exception.
+        $this->strategy
+            ->expects($this->never())
+            ->method('unlockSource');
+
+        StaticState::unlockSourceIndexes();
     }
 
     public function test_reset_clears_state(): void

@@ -3,12 +3,3 @@ elasticsearch_dama:
     managed_indexes:
         - posts
     reset_strategy: clone
-
-    seed:
-        fixtures:
-            posts:
-                # 3 documents baseline avec id fixe pour des assertions stables.
-                # Chaque test démarre avec exactement ces 3 documents dans le clone.
-                - { id: '1', title: 'Hello World', status: published, body: 'Premier article de test.' }
-                - { id: '2', title: 'Draft Post',  status: draft,     body: 'Article en brouillon.' }
-                - { id: '3', title: 'About Us',    status: published, body: 'Page à propos.' }

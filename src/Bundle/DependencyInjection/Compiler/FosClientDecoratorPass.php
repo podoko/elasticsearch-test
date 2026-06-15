@@ -15,8 +15,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  *   2. Change la classe de tous les clients FOSElastica en RefreshForcingClient.
  *   3. Active le suffixage des index (setSuffixIndexes(true)) sur ces clients.
  *   4. Auto-découvre les index gérés si la liste est vide dans la configuration.
- *   5. (A3) Injecte les mappings et settings FOSElastica dans CloneResetStrategy pour
- *      que le seed soit créé avec le bon schéma (propriétés typées, analyzers…).
  *
  * Le suffixage effectif n'a lieu qu'au runtime, dans RefreshForcingClient::getIndex(),
  * et uniquement quand ElasticsearchDamaExtension::isBootstrapped() est true —
@@ -62,13 +60,6 @@ final class FosClientDecoratorPass implements CompilerPassInterface
             $container->setParameter('elasticsearch_dama.managed_indexes', $managedIndexes);
         }
 
-        // -----------------------------------------------------------------------
-        // 4. (A3) Injecter les mappings/settings FOSElastica dans CloneResetStrategy
-        //    pour que le seed soit créé avec le schéma complet (types, analyzers…).
-        //    Sans ça, ES infère les types dynamiquement et "status" devient "text"
-        //    au lieu de "keyword" par exemple.
-        // -----------------------------------------------------------------------
-        $this->injectMappingsIntoStrategy($container, $managedIndexes);
     }
 
     // -----------------------------------------------------------------------
@@ -108,48 +99,6 @@ final class FosClientDecoratorPass implements CompilerPassInterface
                 )
             );
         }
-    }
-
-    private function injectMappingsIntoStrategy(ContainerBuilder $container, array $managedIndexes): void
-    {
-        if (!$container->hasDefinition('fos_elastica.config_source.container')) {
-            return;
-        }
-
-        if (!$container->hasDefinition('elasticsearch_dama.reset_strategy')) {
-            return;
-        }
-
-        $indexConfigs = $container->getDefinition('fos_elastica.config_source.container')->getArgument(0);
-
-        if (!\is_array($indexConfigs)) {
-            return;
-        }
-
-        $indexMappings = [];
-        $indexSettings = [];
-
-        foreach ($managedIndexes as $logicalName) {
-            if (!isset($indexConfigs[$logicalName])) {
-                continue;
-            }
-
-            $config = $indexConfigs[$logicalName];
-
-            // 'mapping' contient 'properties', 'dynamic_templates', '_routing', etc.
-            if (!empty($config['mapping'])) {
-                $indexMappings[$logicalName] = $config['mapping'];
-            }
-
-            // 'settings' contient les paramètres ES (number_of_shards, analyzers…)
-            if (!empty($config['settings'])) {
-                $indexSettings[$logicalName] = $config['settings'];
-            }
-        }
-
-        $strategyDef = $container->getDefinition('elasticsearch_dama.reset_strategy');
-        $strategyDef->replaceArgument(2, $indexMappings);
-        $strategyDef->replaceArgument(3, $indexSettings);
     }
 
     private function discoverAllFosIndexes(ContainerBuilder $container): array

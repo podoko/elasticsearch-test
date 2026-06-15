@@ -13,7 +13,7 @@ use Podoko\ElasticsearchDama\Tests\Functional\Support\FunctionalTestCase;
 /**
  * Vérifie le comportement de clonage paresseux de LazyCloneIndex.
  *
- * Avant toute écriture, l'index pointe sur le seed (posts_seed).
+ * Avant toute écriture, l'index pointe sur la source (posts).
  * Après la première écriture, il pointe sur le clone worker (posts_<token>).
  */
 final class SuffixingTest extends FunctionalTestCase
@@ -26,14 +26,14 @@ final class SuffixingTest extends FunctionalTestCase
         );
     }
 
-    public function test_index_points_to_seed_before_any_write(): void
+    public function test_index_points_to_source_before_any_write(): void
     {
         $index = static::getContainer()->get('fos_elastica.index.posts');
 
         self::assertSame(
-            'posts_seed',
+            'posts',
             $index->getName(),
-            'Avant toute écriture, l\'index doit pointer sur le seed.'
+            'Avant toute écriture, l\'index doit pointer sur la source.'
         );
     }
 

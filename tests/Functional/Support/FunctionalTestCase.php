@@ -11,13 +11,14 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 /**
  * Classe de base pour les tests fonctionnels de la lib.
  *
- * Il suffit d'étendre KernelTestCase pour bénéficier de l'isolation ES.
- * Le clonage des index est paresseux : le clone seed → worker n'est créé
+ * Prérequis : l'index `posts` doit exister et être peuplé avant de lancer la suite.
+ * Lancer `php tests/Functional/App/bin/setup-test-indexes.php` une fois avant phpunit/paratest.
+ *
+ * Le clonage des index est paresseux : le clone source → worker n'est créé
  * que lors de la première opération d'écriture dans le test (via LazyCloneIndex).
- * Les lectures vont directement sur le seed (posts_seed).
+ * Les lectures vont directement sur la source (posts).
  *
  * Cycle de vie :
- *   test setUp() → bootKernel() → StaticState::ensureSeedExists()
  *   test() → première écriture → StaticState::copy() → clone créé
  *   tearDown() → ensureKernelShutdown()
  *   Test\Finished → StaticState::rollbackTest() → suppression des clones créés

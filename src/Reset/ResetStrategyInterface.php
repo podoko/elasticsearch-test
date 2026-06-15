@@ -12,7 +12,7 @@ interface ResetStrategyInterface
     /**
      * Prépare l'index de travail avant le test.
      *
-     * @param string $indexName Nom logique de l'index (sans suffixe token, sans "_seed").
+     * @param string $indexName Nom logique de l'index (sans suffixe token).
      * @param string $token     Token worker courant (depuis TestToken::get()).
      */
     public function prepare(string $indexName, string $token): void;
@@ -26,10 +26,10 @@ interface ResetStrategyInterface
     public function cleanup(string $indexName, string $token): void;
 
     /**
-     * Crée/peuple l'index seed s'il n'existe pas encore.
-     * Appelé une fois par processus worker au démarrage.
+     * Retire le write-block posé sur l'index source en vue des clones.
+     * Sans effet si l'index n'existe pas ou n'est pas bloqué.
      *
-     * @param string $indexName Nom logique de l'index.
+     * @param string $indexName Nom logique de l'index source.
      */
-    public function seed(string $indexName): void;
+    public function unlockSource(string $indexName): void;
 }
