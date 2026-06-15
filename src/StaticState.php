@@ -27,6 +27,9 @@ final class StaticState
 
     private static ?string $elasticsearchUrl = null;
 
+    /** @var array<string, true> Index logiques copiés pendant le test courant. */
+    private static array $copiedIndexes = [];
+
     // -----------------------------------------------------------------------
     // Bootstrap (appelé par StaticStateInitializer depuis le conteneur Symfony)
     // -----------------------------------------------------------------------
@@ -42,29 +45,41 @@ final class StaticState
         self::$resetStrategy    = $resetStrategy;
         self::$elasticsearchUrl = $elasticsearchUrl;
         self::$initialized      = true;
+        self::$copiedIndexes    = [];
     }
 
     // -----------------------------------------------------------------------
-    // Cycle de vie par test (appelé par les subscribers PHPUnit)
+    // Cycle de vie par test (appelé par les subscribers PHPUnit et LazyCloneIndex)
     // -----------------------------------------------------------------------
 
     /**
-     * Appelé par TestPreparedSubscriber : clone le seed vers l'index de travail.
+     * Vérifie si un clone a déjà été créé pour cet index dans le test courant.
+     * Appelé par LazyCloneIndex::getName() pour résoudre le nom physique de l'index.
      */
-    public static function beginTest(): void
+    public static function hasCopy(string $indexName): bool
+    {
+        return isset(self::$copiedIndexes[$indexName]);
+    }
+
+    /**
+     * Clone paresseux : crée le clone seed → worker pour cet index si ce n'est pas déjà fait.
+     * Appelé par LazyCloneIndex::ensureCopy() lors de la première opération d'écriture.
+     * Idempotent : un deuxième appel pour le même index est sans effet.
+     */
+    public static function copy(string $indexName): void
     {
         self::assertInitialized();
 
-        $token    = TestToken::get();
-        $strategy = self::$resetStrategy;
-
-        foreach (self::$managedIndexes as $indexName) {
-            $strategy->prepare($indexName, $token);
+        if (isset(self::$copiedIndexes[$indexName])) {
+            return;
         }
+
+        self::$resetStrategy->prepare($indexName, TestToken::get());
+        self::$copiedIndexes[$indexName] = true;
     }
 
     /**
-     * Appelé par TestFinishedSubscriber : supprime l'index de travail.
+     * Appelé par TestFinishedSubscriber : supprime uniquement les clones créés pendant ce test.
      */
     public static function rollbackTest(): void
     {
@@ -73,9 +88,11 @@ final class StaticState
         $token    = TestToken::get();
         $strategy = self::$resetStrategy;
 
-        foreach (self::$managedIndexes as $indexName) {
+        foreach (\array_keys(self::$copiedIndexes) as $indexName) {
             $strategy->cleanup($indexName, $token);
         }
+
+        self::$copiedIndexes = [];
     }
 
     /**
@@ -133,6 +150,7 @@ final class StaticState
         self::$resetStrategy    = null;
         self::$adminClient      = null;
         self::$elasticsearchUrl = null;
+        self::$copiedIndexes    = [];
     }
 
     // -----------------------------------------------------------------------

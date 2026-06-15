@@ -47,7 +47,7 @@ final class StaticStateTest extends TestCase
     public function test_throws_when_not_initialized(): void
     {
         $this->expectException(\LogicException::class);
-        StaticState::beginTest();
+        StaticState::copy('posts');
     }
 
     public function test_is_initialized_after_initialize(): void
@@ -56,21 +56,53 @@ final class StaticStateTest extends TestCase
         self::assertTrue(StaticState::isInitialized());
     }
 
-    public function test_begin_test_calls_prepare_for_each_index(): void
+    public function test_copy_calls_prepare_for_given_index(): void
     {
         $this->initialize(['posts', 'comments']);
 
         $this->strategy
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('prepare')
-            ->with(self::anything(), '1');
+            ->with('posts', '1');
 
-        StaticState::beginTest();
+        StaticState::copy('posts');
     }
 
-    public function test_rollback_test_calls_cleanup_for_each_index(): void
+    public function test_copy_is_idempotent(): void
     {
         $this->initialize(['posts']);
+
+        $this->strategy
+            ->expects($this->once())
+            ->method('prepare');
+
+        StaticState::copy('posts');
+        StaticState::copy('posts');
+    }
+
+    public function test_has_copy_returns_false_before_copy(): void
+    {
+        $this->initialize(['posts']);
+        self::assertFalse(StaticState::hasCopy('posts'));
+    }
+
+    public function test_has_copy_returns_true_after_copy(): void
+    {
+        $this->initialize(['posts']);
+        $this->strategy->method('prepare');
+
+        StaticState::copy('posts');
+        self::assertTrue(StaticState::hasCopy('posts'));
+    }
+
+    public function test_rollback_only_cleans_copied_indexes(): void
+    {
+        $this->initialize(['posts', 'comments']);
+
+        $this->strategy->method('prepare');
+
+        // On ne copie que 'posts', pas 'comments'
+        StaticState::copy('posts');
 
         $this->strategy
             ->expects($this->once())
@@ -78,6 +110,30 @@ final class StaticStateTest extends TestCase
             ->with('posts', '1');
 
         StaticState::rollbackTest();
+    }
+
+    public function test_rollback_does_nothing_when_nothing_copied(): void
+    {
+        $this->initialize(['posts', 'comments']);
+
+        $this->strategy
+            ->expects($this->never())
+            ->method('cleanup');
+
+        StaticState::rollbackTest();
+    }
+
+    public function test_rollback_resets_copied_state(): void
+    {
+        $this->initialize(['posts']);
+        $this->strategy->method('prepare');
+        $this->strategy->method('cleanup');
+
+        StaticState::copy('posts');
+        self::assertTrue(StaticState::hasCopy('posts'));
+
+        StaticState::rollbackTest();
+        self::assertFalse(StaticState::hasCopy('posts'));
     }
 
     public function test_ensure_seed_exists_calls_seed_for_each_index(): void

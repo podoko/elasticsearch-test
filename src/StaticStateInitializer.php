@@ -26,5 +26,10 @@ final class StaticStateInitializer
             resetStrategy: $this->resetStrategy,
             elasticsearchUrl: $this->elasticsearchUrl,
         );
+
+        // Le clonage est désormais paresseux (déclenché à la première écriture via LazyCloneIndex).
+        // Les lectures vont directement sur le seed (posts_seed) — il doit exister avant le
+        // premier accès en lecture. On le garantit ici au boot du kernel, avant tout test.
+        StaticState::ensureSeedExists();
     }
 }

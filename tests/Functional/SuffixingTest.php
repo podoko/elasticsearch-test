@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace Podoko\ElasticsearchDama\Tests\Functional;
 
-use Elastica\Index;
 use Podoko\ElasticsearchDama\PHPUnit\ElasticsearchDamaExtension;
+use Podoko\ElasticsearchDama\StaticState;
 use Podoko\ElasticsearchDama\TestToken;
+use Podoko\ElasticsearchDama\Tests\Functional\Factory\PostFactory;
 use Podoko\ElasticsearchDama\Tests\Functional\Support\FunctionalTestCase;
 
 /**
- * Vérifie que le suffixage runtime de getIndex() est bien actif sous PHPUnit.
+ * Vérifie le comportement de clonage paresseux de LazyCloneIndex.
  *
- * Ce test garantit que :
- *   1. L'extension PHPUnit est bootstrappée (sentinelle active).
- *   2. Le service fos_elastica.index.posts pointe sur posts_<token> et non posts.
- *   3. Le nom du clone correspond au token worker courant (ParaTest-safe).
+ * Avant toute écriture, l'index pointe sur le seed (posts_seed).
+ * Après la première écriture, il pointe sur le clone worker (posts_<token>).
  */
 final class SuffixingTest extends FunctionalTestCase
 {
@@ -27,31 +26,47 @@ final class SuffixingTest extends FunctionalTestCase
         );
     }
 
-    public function test_fos_index_is_suffixed_with_worker_token(): void
+    public function test_index_points_to_seed_before_any_write(): void
     {
-        /** @var Index $index */
         $index = static::getContainer()->get('fos_elastica.index.posts');
 
-        $expectedName = 'posts_' . TestToken::get();
-
         self::assertSame(
-            $expectedName,
+            'posts_seed',
             $index->getName(),
-            \sprintf(
-                'L\'index FOSElastica doit pointer sur "%s" (clone suffixé), mais pointe sur "%s".',
-                $expectedName,
-                $index->getName(),
-            )
+            'Avant toute écriture, l\'index doit pointer sur le seed.'
         );
     }
 
-    public function test_index_name_changes_with_token(): void
+    public function test_index_points_to_worker_clone_after_write(): void
     {
-        /** @var Index $index */
+        $this->index(PostFactory::createOne());
+
         $index = static::getContainer()->get('fos_elastica.index.posts');
 
-        // Le nom doit contenir le token et ne pas être l'index brut "posts"
-        self::assertStringStartsWith('posts_', $index->getName());
-        self::assertNotEquals('posts', $index->getName());
+        self::assertSame(
+            'posts_' . TestToken::get(),
+            $index->getName(),
+            'Après la première écriture, l\'index doit pointer sur le clone worker.'
+        );
+    }
+
+    public function test_no_clone_created_for_read_only_test(): void
+    {
+        // Un test qui ne fait que lire ne doit pas créer de clone.
+        $this->countAll();
+
+        self::assertFalse(
+            StaticState::hasCopy('posts'),
+            'Un test sans écriture ne doit pas créer de clone.'
+        );
+    }
+
+    public function test_clone_is_created_on_first_write(): void
+    {
+        self::assertFalse(StaticState::hasCopy('posts'));
+
+        $this->index(PostFactory::createOne());
+
+        self::assertTrue(StaticState::hasCopy('posts'));
     }
 }

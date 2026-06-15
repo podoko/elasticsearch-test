@@ -11,16 +11,16 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 /**
  * Classe de base pour les tests fonctionnels de la lib.
  *
- * Cycle de vie :
- *   setUp() → bootKernel() → PodokoElasticsearchDamaBundle::boot()
- *             → StaticState::initialize()
- *   Test\Prepared (PHPUnit) → StaticState::beginTest() → clone du seed
- *   test()
- *   Test\Finished (PHPUnit) → StaticState::rollbackTest() → suppression du clone
- *   tearDown() → shutdownKernel()
+ * Il suffit d'étendre KernelTestCase pour bénéficier de l'isolation ES.
+ * Le clonage des index est paresseux : le clone seed → worker n'est créé
+ * que lors de la première opération d'écriture dans le test (via LazyCloneIndex).
+ * Les lectures vont directement sur le seed (posts_seed).
  *
- * setUp() est appelé AVANT Test\Prepared (vérifié dans TestCase.php:511-516),
- * donc StaticState est prêt quand le clone est lancé.
+ * Cycle de vie :
+ *   test setUp() → bootKernel() → StaticState::ensureSeedExists()
+ *   test() → première écriture → StaticState::copy() → clone créé
+ *   tearDown() → ensureKernelShutdown()
+ *   Test\Finished → StaticState::rollbackTest() → suppression des clones créés
  */
 abstract class FunctionalTestCase extends KernelTestCase
 {
@@ -29,26 +29,14 @@ abstract class FunctionalTestCase extends KernelTestCase
         return Kernel::class;
     }
 
-    protected function setUp(): void
-    {
-        // Boot du kernel avant Test\Prepared : garantit StaticState::initialize().
-        static::bootKernel();
-    }
+    // -----------------------------------------------------------------------
+    // Helpers pour les cas de test
+    // -----------------------------------------------------------------------
 
     protected function indexer(): PostIndexer
     {
         return new PostIndexer(static::getContainer());
     }
-
-    protected function tearDown(): void
-    {
-        static::ensureKernelShutdown();
-        parent::tearDown();
-    }
-
-    // -----------------------------------------------------------------------
-    // Helpers pour les cas de test
-    // -----------------------------------------------------------------------
 
     /**
      * Indexe un ou plusieurs Post dans l'index de travail et force un refresh.

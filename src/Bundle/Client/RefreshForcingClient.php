@@ -7,7 +7,6 @@ namespace Podoko\ElasticsearchDama\Bundle\Client;
 use Elastica\Index as BaseIndex;
 use FOS\ElasticaBundle\Elastica\Client as FosClient;
 use Podoko\ElasticsearchDama\PHPUnit\ElasticsearchDamaExtension;
-use Podoko\ElasticsearchDama\TestToken;
 
 /**
  * Sous-classe du client FOSElastica qui suffixe getIndex() avec le token worker PHPUnit.
@@ -38,18 +37,20 @@ class RefreshForcingClient extends FosClient
     }
 
     /**
-     * Retourne un Index suffixé avec le token worker, mais seulement si :
+     * Retourne un LazyCloneIndex si le suffixage est actif, un index normal sinon.
+     *
+     * Le LazyCloneIndex pointe sur le seed (posts_seed) par défaut et ne crée le clone
+     * worker (posts_<token>) qu'à la première opération d'écriture. Cela évite de cloner
+     * tous les index au début de chaque test, y compris ceux que le test ne touche pas.
+     *
+     * Condition d'activation (identiques à l'ancienne logique de suffixage) :
      *   1. Ce client est configuré pour suffixer ($suffixIndexes = true).
      *   2. L'extension PHPUnit est bootstrappée (on est sous PHPUnit/ParaTest).
-     *
-     * Le suffixage est résolu au runtime (ici) et non au compile-time (CompilerPass)
-     * pour éviter que la valeur du token soit figée dans le cache du conteneur Symfony
-     * partagé entre les workers ParaTest.
      */
     public function getIndex(string $name): BaseIndex
     {
         if ($this->suffixIndexes && ElasticsearchDamaExtension::isBootstrapped()) {
-            return parent::getIndex($name . '_' . TestToken::get());
+            return new LazyCloneIndex($name, $this);
         }
 
         return parent::getIndex($name);

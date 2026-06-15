@@ -6,20 +6,17 @@ namespace Podoko\ElasticsearchDama\PHPUnit\Subscriber;
 
 use PHPUnit\Event\Test\Prepared;
 use PHPUnit\Event\Test\PreparedSubscriber;
-use Podoko\ElasticsearchDama\StaticState;
 
 /**
  * Appelé avant chaque test.
- * Clone le seed vers l'index de travail du worker courant.
+ *
+ * Le clonage des index est désormais paresseux : LazyCloneIndex crée le clone
+ * seed → worker uniquement lors de la première opération d'écriture dans le test.
+ * Ce subscriber n'a donc plus besoin de démarrer le kernel ni de cloner quoi que ce soit.
  */
 final class TestPreparedSubscriber implements PreparedSubscriber
 {
     public function notify(Prepared $event): void
     {
-        if (!StaticState::isInitialized()) {
-            return;
-        }
-
-        StaticState::beginTest();
     }
 }
