@@ -29,10 +29,10 @@ final class PostFactory extends ObjectFactory
     protected function defaults(): array
     {
         return [
-            'id'     => self::faker()->uuid(),
-            'title'  => self::faker()->sentence(4),
+            'id' => self::faker()->uuid(),
+            'title' => self::faker()->sentence(4),
             'status' => self::faker()->randomElement(['published', 'draft']),
-            'body'   => self::faker()->paragraph(),
+            'body' => self::faker()->paragraph(),
         ];
     }
 }

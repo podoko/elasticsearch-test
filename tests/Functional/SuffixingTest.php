@@ -6,9 +6,9 @@ namespace Podoko\ElasticsearchTest\Tests\Functional;
 
 use Podoko\ElasticsearchTest\PHPUnit\ElasticsearchTestExtension;
 use Podoko\ElasticsearchTest\StaticState;
-use Podoko\ElasticsearchTest\TestToken;
 use Podoko\ElasticsearchTest\Tests\Functional\Factory\PostFactory;
 use Podoko\ElasticsearchTest\Tests\Functional\Support\FunctionalTestCase;
+use Podoko\ElasticsearchTest\TestToken;
 
 /**
  * Verifies the lazy-cloning behaviour of LazyCloneIndex.
@@ -18,7 +18,7 @@ use Podoko\ElasticsearchTest\Tests\Functional\Support\FunctionalTestCase;
  */
 final class SuffixingTest extends FunctionalTestCase
 {
-    public function test_extension_is_bootstrapped(): void
+    public function testExtensionIsBootstrapped(): void
     {
         self::assertTrue(
             ElasticsearchTestExtension::isBootstrapped(),
@@ -26,7 +26,7 @@ final class SuffixingTest extends FunctionalTestCase
         );
     }
 
-    public function test_index_points_to_source_before_any_write(): void
+    public function testIndexPointsToSourceBeforeAnyWrite(): void
     {
         $index = static::getContainer()->get('fos_elastica.index.posts');
 
@@ -37,20 +37,20 @@ final class SuffixingTest extends FunctionalTestCase
         );
     }
 
-    public function test_index_points_to_worker_clone_after_write(): void
+    public function testIndexPointsToWorkerCloneAfterWrite(): void
     {
         $this->index(PostFactory::createOne());
 
         $index = static::getContainer()->get('fos_elastica.index.posts');
 
         self::assertSame(
-            'posts_' . TestToken::get(),
+            'posts_'.TestToken::get(),
             $index->getName(),
             'After the first write, the index must point to the worker clone.'
         );
     }
 
-    public function test_no_clone_created_for_read_only_test(): void
+    public function testNoCloneCreatedForReadOnlyTest(): void
     {
         // A read-only test must not create a clone.
         $this->countAll();
@@ -61,7 +61,7 @@ final class SuffixingTest extends FunctionalTestCase
         );
     }
 
-    public function test_clone_is_created_on_first_write(): void
+    public function testCloneIsCreatedOnFirstWrite(): void
     {
         self::assertFalse(StaticState::hasCopy('posts'));
 

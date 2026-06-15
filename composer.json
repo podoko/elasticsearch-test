@@ -20,6 +20,8 @@
     },
     "require-dev": {
         "brianium/paratest": "^7.4",
+        "friendsofphp/php-cs-fixer": "^3.95",
+        "phpstan/phpstan": "^2.2",
         "phpunit/phpunit": "^11.5",
         "symfony/framework-bundle": "^6.4|^7.0",
         "symfony/runtime": "^6.4|^7.0",

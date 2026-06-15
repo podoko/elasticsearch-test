@@ -38,16 +38,16 @@ final class BenchmarkCloneCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io         = new SymfonyStyle($input, $output);
-        $indexName  = (string) $input->getOption('index');
-        $token      = (string) $input->getOption('token');
+        $io = new SymfonyStyle($input, $output);
+        $indexName = (string) $input->getOption('index');
+        $token = (string) $input->getOption('token');
         $iterations = max(1, (int) $input->getOption('iterations'));
 
         $io->title(sprintf('Benchmark clone — %s (%d iteration(s))', $indexName, $iterations));
 
         try {
             $countResponse = $this->client->request("$indexName/_count", Request::GET);
-            $docCount      = $countResponse->getData()['count'] ?? '?';
+            $docCount = $countResponse->getData()['count'] ?? '?';
         } catch (ResponseException $e) {
             $io->error(sprintf('Index "%s" not found or unreachable: %s', $indexName, $e->getMessage()));
 
@@ -141,7 +141,7 @@ final class BenchmarkCloneCommand extends Command
                 ['Mean',     sprintf('%.3f', $this->mean($cloneTimes)),                   sprintf('%.3f', $this->mean($deleteTimes))],
                 ['Q3',       sprintf('%.3f', $this->percentile($cloneTimes, 75)),         sprintf('%.3f', $this->percentile($deleteTimes, 75))],
                 ['Max',      sprintf('%.3f', $this->max($cloneTimes)),                    sprintf('%.3f', $this->max($deleteTimes))],
-                ['Std. dev.',sprintf('%.3f', $this->stdDev($cloneTimes)),                 sprintf('%.3f', $this->stdDev($deleteTimes))],
+                ['Std. dev.', sprintf('%.3f', $this->stdDev($cloneTimes)),                 sprintf('%.3f', $this->stdDev($deleteTimes))],
             ],
         );
 
@@ -153,9 +153,9 @@ final class BenchmarkCloneCommand extends Command
         try {
             $response = $this->client->request($name, Request::HEAD);
 
-            return $response->getStatus() === 200;
+            return 200 === $response->getStatus();
         } catch (ResponseException $e) {
-            if ($e->getResponse()->getStatus() === 404) {
+            if (404 === $e->getResponse()->getStatus()) {
                 return false;
             }
 
@@ -190,11 +190,11 @@ final class BenchmarkCloneCommand extends Command
     {
         $sorted = $values;
         sort($sorted);
-        $n     = count($sorted);
+        $n = count($sorted);
         $index = ($p / 100) * ($n - 1);
         $lower = (int) floor($index);
         $upper = (int) ceil($index);
-        $frac  = $index - $lower;
+        $frac = $index - $lower;
 
         return $sorted[$lower] + $frac * ($sorted[$upper] - $sorted[$lower]);
     }
@@ -206,7 +206,7 @@ final class BenchmarkCloneCommand extends Command
             return 0.0;
         }
 
-        $mean     = $this->mean($values);
+        $mean = $this->mean($values);
         $variance = array_sum(array_map(fn (float $v) => ($v - $mean) ** 2, $values)) / (count($values) - 1);
 
         return sqrt($variance);

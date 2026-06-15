@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Podoko\ElasticsearchTest\Tests\Functional;
 
-use Elastica\Query;
 use Podoko\ElasticsearchTest\Tests\Functional\Factory\PostFactory;
 use Podoko\ElasticsearchTest\Tests\Functional\Support\FunctionalTestCase;
 
@@ -20,7 +19,7 @@ final class FixturePreservationTest extends FunctionalTestCase
      * Deletes baseline document id='1' and asserts it is gone.
      * → The next test must find id='1' again (fresh clone from the seed).
      */
-    public function test_deleted_fixture_is_gone_within_this_test(): void
+    public function testDeletedFixtureIsGoneWithinThisTest(): void
     {
         $this->deletePost('1');
 
@@ -35,17 +34,17 @@ final class FixturePreservationTest extends FunctionalTestCase
      * Asserts that id='1' is present → proves that the deletion in the
      * previous test did not affect this clone.
      */
-    public function test_fixture_is_intact_after_deletion_in_previous_test(): void
+    public function testFixtureIsIntactAfterDeletionInPreviousTest(): void
     {
         self::assertSame(
             self::BASELINE_COUNT,
             $this->countAll(),
             'This test\'s clone must be intact (3 fixtures), '
-            . 'regardless of deletions in the previous test.'
+            .'regardless of deletions in the previous test.'
         );
 
         // Directly verify that id='1' exists in this clone
-        $index    = $this->indexer()->getIndex();
+        $index = $this->indexer()->getIndex();
         $document = $index->getDocument('1');
         self::assertSame('1', $document->getId());
     }
@@ -53,7 +52,7 @@ final class FixturePreservationTest extends FunctionalTestCase
     /**
      * Indexes a new document in this test.
      */
-    public function test_new_document_is_visible_only_in_this_test(): void
+    public function testNewDocumentIsVisibleOnlyInThisTest(): void
     {
         $post = PostFactory::createOne(['title' => 'Unique post for this test']);
         $this->index($post);
@@ -65,7 +64,7 @@ final class FixturePreservationTest extends FunctionalTestCase
      * Without indexing or deletion, the count stays at 3.
      * → Proves that the document created in the previous test is not visible here.
      */
-    public function test_no_new_document_from_previous_test(): void
+    public function testNoNewDocumentFromPreviousTest(): void
     {
         self::assertSame(
             self::BASELINE_COUNT,
@@ -77,7 +76,7 @@ final class FixturePreservationTest extends FunctionalTestCase
     /**
      * Verifies that the fixtures have the expected statuses.
      */
-    public function test_fixture_status_is_preserved(): void
+    public function testFixtureStatusIsPreserved(): void
     {
         $index = $this->indexer()->getIndex();
 

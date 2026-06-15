@@ -19,7 +19,7 @@ final class StaticStateTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->savedTestToken       = \getenv('TEST_TOKEN');
+        $this->savedTestToken = \getenv('TEST_TOKEN');
         $this->savedUniqueTestToken = \getenv('UNIQUE_TEST_TOKEN');
 
         StaticState::reset();
@@ -35,28 +35,28 @@ final class StaticStateTest extends TestCase
         StaticState::reset();
         TestToken::reset();
 
-        $this->savedTestToken !== false
-            ? \putenv('TEST_TOKEN=' . $this->savedTestToken)
+        false !== $this->savedTestToken
+            ? \putenv('TEST_TOKEN='.$this->savedTestToken)
             : \putenv('TEST_TOKEN');
 
-        $this->savedUniqueTestToken !== false
-            ? \putenv('UNIQUE_TEST_TOKEN=' . $this->savedUniqueTestToken)
+        false !== $this->savedUniqueTestToken
+            ? \putenv('UNIQUE_TEST_TOKEN='.$this->savedUniqueTestToken)
             : \putenv('UNIQUE_TEST_TOKEN');
     }
 
-    public function test_throws_when_not_initialized(): void
+    public function testThrowsWhenNotInitialized(): void
     {
         $this->expectException(\LogicException::class);
         StaticState::copy('posts');
     }
 
-    public function test_is_initialized_after_initialize(): void
+    public function testIsInitializedAfterInitialize(): void
     {
         $this->initialize();
         self::assertTrue(StaticState::isInitialized());
     }
 
-    public function test_copy_calls_prepare_for_given_index(): void
+    public function testCopyCallsPrepareForGivenIndex(): void
     {
         $this->initialize(['posts', 'comments']);
 
@@ -68,7 +68,7 @@ final class StaticStateTest extends TestCase
         StaticState::copy('posts');
     }
 
-    public function test_copy_is_idempotent(): void
+    public function testCopyIsIdempotent(): void
     {
         $this->initialize(['posts']);
 
@@ -80,13 +80,13 @@ final class StaticStateTest extends TestCase
         StaticState::copy('posts');
     }
 
-    public function test_has_copy_returns_false_before_copy(): void
+    public function testHasCopyReturnsFalseBeforeCopy(): void
     {
         $this->initialize(['posts']);
         self::assertFalse(StaticState::hasCopy('posts'));
     }
 
-    public function test_has_copy_returns_true_after_copy(): void
+    public function testHasCopyReturnsTrueAfterCopy(): void
     {
         $this->initialize(['posts']);
         $this->strategy->method('prepare');
@@ -95,7 +95,7 @@ final class StaticStateTest extends TestCase
         self::assertTrue(StaticState::hasCopy('posts'));
     }
 
-    public function test_rollback_only_cleans_copied_indexes(): void
+    public function testRollbackOnlyCleansCopiedIndexes(): void
     {
         $this->initialize(['posts', 'comments']);
 
@@ -112,7 +112,7 @@ final class StaticStateTest extends TestCase
         StaticState::rollbackTest();
     }
 
-    public function test_rollback_does_nothing_when_nothing_copied(): void
+    public function testRollbackDoesNothingWhenNothingCopied(): void
     {
         $this->initialize(['posts', 'comments']);
 
@@ -123,7 +123,7 @@ final class StaticStateTest extends TestCase
         StaticState::rollbackTest();
     }
 
-    public function test_rollback_resets_copied_state(): void
+    public function testRollbackResetsCopiedState(): void
     {
         $this->initialize(['posts']);
         $this->strategy->method('prepare');
@@ -136,7 +136,7 @@ final class StaticStateTest extends TestCase
         self::assertFalse(StaticState::hasCopy('posts'));
     }
 
-    public function test_unlock_source_indexes_calls_unlock_for_each_managed_index(): void
+    public function testUnlockSourceIndexesCallsUnlockForEachManagedIndex(): void
     {
         $this->initialize(['posts', 'tags']);
 
@@ -147,7 +147,7 @@ final class StaticStateTest extends TestCase
         StaticState::unlockSourceIndexes();
     }
 
-    public function test_unlock_source_indexes_is_noop_when_not_initialized(): void
+    public function testUnlockSourceIndexesIsNoopWhenNotInitialized(): void
     {
         // StaticState not initialized — must not throw.
         $this->strategy
@@ -157,7 +157,7 @@ final class StaticStateTest extends TestCase
         StaticState::unlockSourceIndexes();
     }
 
-    public function test_reset_clears_state(): void
+    public function testResetClearsState(): void
     {
         $this->initialize();
         StaticState::reset();
@@ -168,6 +168,7 @@ final class StaticStateTest extends TestCase
     // Helpers
     // -----------------------------------------------------------------------
 
+    /** @param string[] $indexes */
     private function initialize(array $indexes = ['posts']): void
     {
         $clientMock = $this->createMock(\Elastica\Client::class);

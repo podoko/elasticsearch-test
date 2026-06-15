@@ -23,7 +23,8 @@ final class CloneResetStrategy implements ResetStrategyInterface
 {
     public function __construct(
         private readonly Client $adminClient,
-    ) {}
+    ) {
+    }
 
     // -----------------------------------------------------------------------
     // ResetStrategyInterface
@@ -88,7 +89,7 @@ final class CloneResetStrategy implements ResetStrategyInterface
 
     public static function workerName(string $indexName, string $token): string
     {
-        return $indexName . '_' . $token;
+        return $indexName.'_'.$token;
     }
 
     private function indexExists(string $indexName): bool
@@ -96,9 +97,9 @@ final class CloneResetStrategy implements ResetStrategyInterface
         try {
             $response = $this->adminClient->request("$indexName", Request::HEAD);
 
-            return $response->getStatus() === 200;
+            return 200 === $response->getStatus();
         } catch (ResponseException $e) {
-            if ($e->getResponse()->getStatus() === 404) {
+            if (404 === $e->getResponse()->getStatus()) {
                 return false;
             }
 

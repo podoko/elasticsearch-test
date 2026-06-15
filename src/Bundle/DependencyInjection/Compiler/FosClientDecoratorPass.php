@@ -59,7 +59,6 @@ final class FosClientDecoratorPass implements CompilerPassInterface
             $managedIndexes = $this->discoverAllFosIndexes($container);
             $container->setParameter('elasticsearch_test.managed_indexes', $managedIndexes);
         }
-
     }
 
     // -----------------------------------------------------------------------
@@ -87,20 +86,11 @@ final class FosClientDecoratorPass implements CompilerPassInterface
         }
 
         if (!empty($aliasedIndexes)) {
-            throw new \RuntimeException(
-                \sprintf(
-                    'elasticsearch-test does not support FOSElastica indexes configured with '
-                    . '"use_alias: true" (affected index(es): "%s"). '
-                    . 'Suffixing getIndex() bypasses FOSElastica\'s alias logic, '
-                    . 'which would cause silent errors. '
-                    . 'Disable use_alias for these indexes in your test configuration '
-                    . '(config/packages/test/fos_elastica.yaml) or exclude them from managed_indexes.',
-                    \implode('", "', $aliasedIndexes)
-                )
-            );
+            throw new \RuntimeException(\sprintf('elasticsearch-test does not support FOSElastica indexes configured with "use_alias: true" (affected index(es): "%s"). Suffixing getIndex() bypasses FOSElastica\'s alias logic, which would cause silent errors. Disable use_alias for these indexes in your test configuration (config/packages/test/fos_elastica.yaml) or exclude them from managed_indexes.', \implode('", "', $aliasedIndexes)));
         }
     }
 
+    /** @return string[] */
     private function discoverAllFosIndexes(ContainerBuilder $container): array
     {
         $indexes = [];

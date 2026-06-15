@@ -17,7 +17,7 @@ final class TestToken
 
     public static function get(): string
     {
-        if (self::$resolved !== null) {
+        if (null !== self::$resolved) {
             return self::$resolved;
         }
 
@@ -26,11 +26,11 @@ final class TestToken
         // TEST_TOKEN is preferred for shorter index names.
         $token = \getenv('TEST_TOKEN');
 
-        if ($token === false || $token === '') {
+        if (false === $token || '' === $token) {
             $token = \getenv('UNIQUE_TEST_TOKEN');
         }
 
-        if ($token === false || $token === '') {
+        if (false === $token || '' === $token) {
             $token = '1';
         }
 

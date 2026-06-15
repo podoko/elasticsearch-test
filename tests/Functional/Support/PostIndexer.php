@@ -22,7 +22,7 @@ final class PostIndexer
     public function __construct(ContainerInterface $container)
     {
         /** @var Index $index */
-        $index       = $container->get('fos_elastica.index.posts');
+        $index = $container->get('fos_elastica.index.posts');
         $this->index = $index;
     }
 

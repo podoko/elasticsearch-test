@@ -18,7 +18,7 @@ final class IsolationTest extends FunctionalTestCase
 {
     private const BASELINE_COUNT = 3;
 
-    public function test_index_one_document_does_not_leak_into_other_tests(): void
+    public function testIndexOneDocumentDoesNotLeakIntoOtherTests(): void
     {
         // Index 1 additional document
         $post = PostFactory::createOne(['status' => 'published']);
@@ -31,7 +31,7 @@ final class IsolationTest extends FunctionalTestCase
         );
     }
 
-    public function test_index_five_documents_does_not_leak_into_other_tests(): void
+    public function testIndexFiveDocumentsDoesNotLeakIntoOtherTests(): void
     {
         // Index 5 additional documents
         $posts = PostFactory::createMany(5);
@@ -41,11 +41,11 @@ final class IsolationTest extends FunctionalTestCase
             self::BASELINE_COUNT + 5,
             $this->countAll(),
             'After indexing 5 docs, the total must be baseline + 5, '
-            . 'not baseline + 6 (leak from the previous test).'
+            .'not baseline + 6 (leak from the previous test).'
         );
     }
 
-    public function test_index_ten_documents_does_not_leak_into_other_tests(): void
+    public function testIndexTenDocumentsDoesNotLeakIntoOtherTests(): void
     {
         $posts = PostFactory::createMany(10);
         $this->index(...$posts);
@@ -56,7 +56,7 @@ final class IsolationTest extends FunctionalTestCase
         );
     }
 
-    public function test_clean_clone_without_any_indexing(): void
+    public function testCleanCloneWithoutAnyIndexing(): void
     {
         // No indexing in this test — the total must stay at the baseline
         self::assertSame(
@@ -66,7 +66,7 @@ final class IsolationTest extends FunctionalTestCase
         );
     }
 
-    public function test_only_published_posts_are_indexed(): void
+    public function testOnlyPublishedPostsAreIndexed(): void
     {
         // Controlled baseline: 2 published + 3 drafts → only the total count changes
         $this->index(

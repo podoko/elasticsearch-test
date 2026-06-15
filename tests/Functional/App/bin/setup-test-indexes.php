@@ -25,20 +25,20 @@ use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
-require dirname(__DIR__, 4) . '/vendor/autoload.php';
+require dirname(__DIR__, 4).'/vendor/autoload.php';
 
 // Load environment variables from .env.test.
-$envFile = dirname(__DIR__, 4) . '/.env.test';
+$envFile = dirname(__DIR__, 4).'/.env.test';
 if (is_file($envFile)) {
     foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
         if (str_starts_with(ltrim($line), '#') || !str_contains($line, '=')) {
             continue;
         }
         [$key, $value] = explode('=', $line, 2);
-        $key   = trim($key);
+        $key = trim($key);
         $value = trim($value);
         if (!isset($_ENV[$key]) && !getenv($key)) {
-            $_ENV[$key]    = $value;
+            $_ENV[$key] = $value;
             $_SERVER[$key] = $value;
             putenv("$key=$value");
         }
@@ -50,23 +50,23 @@ $parts = parse_url($esUrl);
 foreach ([
     'ELASTICSEARCH_HOST' => $parts['host'] ?? 'localhost',
     'ELASTICSEARCH_PORT' => (string) ($parts['port'] ?? 9200),
-    'APP_SECRET'         => 'test-secret',
+    'APP_SECRET' => 'test-secret',
 ] as $key => $value) {
     if (!getenv($key)) {
-        $_ENV[$key]    = $value;
+        $_ENV[$key] = $value;
         $_SERVER[$key] = $value;
         putenv("$key=$value");
     }
 }
 
-$_SERVER['APP_ENV']   = 'test';
+$_SERVER['APP_ENV'] = 'test';
 $_SERVER['APP_DEBUG'] = '1';
 
 // -----------------------------------------------------------------------
 // 1. Recreate indexes via fos:elastica:reset
 //    Reads the mapping from fos_elastica.yaml — no duplication.
 // -----------------------------------------------------------------------
-$kernel      = new Kernel();
+$kernel = new Kernel();
 $application = new Application($kernel);
 $application->setAutoExit(false);
 
@@ -77,7 +77,7 @@ $exitCode = $application->run(
     $output,
 );
 
-if ($exitCode !== 0) {
+if (0 !== $exitCode) {
     exit($exitCode);
 }
 
@@ -86,7 +86,7 @@ if ($exitCode !== 0) {
 //    The mapping is already created by fos:elastica:reset above.
 // -----------------------------------------------------------------------
 // StaticState is initialized at Kernel boot (PodokoElasticsearchTestBundle::boot).
-$adminClient = \Podoko\ElasticsearchTest\StaticState::getAdminClient();
+$adminClient = Podoko\ElasticsearchTest\StaticState::getAdminClient();
 
 $postsIndex = $adminClient->getIndex('posts');
 $postsIndex->addDocuments([
@@ -112,6 +112,6 @@ echo "Index 'articles' populated with 3 documents (benchmark: run app:benchmark:
 //    segments = less cluster coordination = faster clone.
 // -----------------------------------------------------------------------
 foreach (['posts', 'articles'] as $indexName) {
-    $adminClient->request("$indexName/_forcemerge", \Elastica\Request::POST, [], ['max_num_segments' => 1]);
+    $adminClient->request("$indexName/_forcemerge", Elastica\Request::POST, [], ['max_num_segments' => 1]);
     echo "Index '$indexName' force-merged to 1 segment.\n";
 }

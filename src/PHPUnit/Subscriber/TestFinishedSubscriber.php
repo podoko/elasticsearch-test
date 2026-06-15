@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Podoko\ElasticsearchTest\PHPUnit\Subscriber;
 
+use PHPUnit\Event\Code\TestMethod;
 use PHPUnit\Event\Test\Finished;
 use PHPUnit\Event\Test\FinishedSubscriber;
 use Podoko\ElasticsearchTest\PHPUnit\ElasticsearchTestExtension;
@@ -22,7 +23,12 @@ final class TestFinishedSubscriber implements FinishedSubscriber
             return;
         }
 
-        $testClass = $event->test()->className();
+        $test = $event->test();
+        if (!$test instanceof TestMethod) {
+            return;
+        }
+
+        $testClass = $test->className();
 
         if (!class_exists(KernelTestCase::class) || !is_a($testClass, KernelTestCase::class, true)) {
             return;

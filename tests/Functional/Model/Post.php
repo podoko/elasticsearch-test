@@ -15,7 +15,8 @@ final class Post
         public readonly string $title,
         public readonly string $status,
         public readonly string $body = '',
-    ) {}
+    ) {
+    }
 
     /**
      * Returns the document in the format expected by Elastica\Document.
@@ -25,9 +26,9 @@ final class Post
     public function toDocument(): array
     {
         return [
-            'title'  => $this->title,
+            'title' => $this->title,
             'status' => $this->status,
-            'body'   => $this->body,
+            'body' => $this->body,
         ];
     }
 }

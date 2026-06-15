@@ -20,7 +20,7 @@ final class SeedBaselineTest extends FunctionalTestCase
 {
     private const BASELINE_COUNT = 3;
 
-    public function test_baseline_at_start_of_first_test(): void
+    public function testBaselineAtStartOfFirstTest(): void
     {
         self::assertSame(
             self::BASELINE_COUNT,
@@ -29,7 +29,7 @@ final class SeedBaselineTest extends FunctionalTestCase
         );
     }
 
-    public function test_baseline_at_start_of_second_test(): void
+    public function testBaselineAtStartOfSecondTest(): void
     {
         self::assertSame(
             self::BASELINE_COUNT,
@@ -38,7 +38,7 @@ final class SeedBaselineTest extends FunctionalTestCase
         );
     }
 
-    public function test_baseline_at_start_of_third_test(): void
+    public function testBaselineAtStartOfThirdTest(): void
     {
         self::assertSame(
             self::BASELINE_COUNT,
@@ -50,7 +50,7 @@ final class SeedBaselineTest extends FunctionalTestCase
     /**
      * Verifies that the fixed IDs of the baseline fixtures are present.
      */
-    public function test_fixture_ids_are_present(): void
+    public function testFixtureIdsArePresent(): void
     {
         $index = $this->indexer()->getIndex();
 

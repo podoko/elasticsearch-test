@@ -39,7 +39,7 @@ final class BenchmarkSeedCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io    = new SymfonyStyle($input, $output);
+        $io = new SymfonyStyle($input, $output);
         $count = (int) $input->getOption('count');
         $batch = (int) $input->getOption('batch');
 
@@ -50,7 +50,7 @@ final class BenchmarkSeedCommand extends Command
             $this->client->request('articles', 'DELETE');
             $io->text('Index <info>articles</info> deleted.');
         } catch (\Elastica\Exception\ResponseException $e) {
-            if ($e->getResponse()->getStatus() !== 404) {
+            if (404 !== $e->getResponse()->getStatus()) {
                 throw $e;
             }
         }
@@ -61,13 +61,13 @@ final class BenchmarkSeedCommand extends Command
             ],
             'mappings' => [
                 'properties' => [
-                    'title'       => ['type' => 'text'],
-                    'content'     => ['type' => 'text'],
-                    'category'    => ['type' => 'keyword'],
-                    'tags'        => ['type' => 'keyword'],
-                    'author'      => ['type' => 'keyword'],
+                    'title' => ['type' => 'text'],
+                    'content' => ['type' => 'text'],
+                    'category' => ['type' => 'keyword'],
+                    'tags' => ['type' => 'keyword'],
+                    'author' => ['type' => 'keyword'],
                     'publishedAt' => ['type' => 'date'],
-                    'views'       => ['type' => 'integer'],
+                    'views' => ['type' => 'integer'],
                 ],
             ],
         ]);
@@ -80,19 +80,19 @@ final class BenchmarkSeedCommand extends Command
         $progressBar->start();
 
         $startTime = microtime(true);
-        $indexed   = 0;
+        $indexed = 0;
         $remaining = $count;
 
         while ($remaining > 0) {
             $batchSize = min($batch, $remaining);
 
             $documents = array_map(
-                static fn(Article $a) => new Document($a->id, $a->toDocument()),
+                static fn (Article $a) => new Document($a->id, $a->toDocument()),
                 ArticleFactory::createMany($batchSize),
             );
 
             $index->addDocuments($documents);
-            $indexed   += $batchSize;
+            $indexed += $batchSize;
             $remaining -= $batchSize;
             $progressBar->advance($batchSize);
         }

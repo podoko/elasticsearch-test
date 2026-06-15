@@ -26,7 +26,7 @@ final class PodokoElasticsearchTestExtension extends Extension
     public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = new Configuration();
-        $config        = $this->processConfiguration($configuration, $configs);
+        $config = $this->processConfiguration($configuration, $configs);
 
         if (!$config['enabled']) {
             return;
@@ -47,7 +47,7 @@ final class PodokoElasticsearchTestExtension extends Extension
         // -----------------------------------------------------------------------
         $adminClientDef = new Definition(Client::class);
         $adminClientDef->setArguments([[
-            'url' => $config['elasticsearch_url'] . '/',
+            'url' => $config['elasticsearch_url'].'/',
         ]]);
         $container->setDefinition('elasticsearch_test.admin_client', $adminClientDef);
 
@@ -78,9 +78,10 @@ final class PodokoElasticsearchTestExtension extends Extension
     // Private
     // -----------------------------------------------------------------------
 
+    /** @param array<string, mixed> $config */
     private function registerResetStrategy(ContainerBuilder $container, array $config): void
     {
-        if ($config['reset_strategy'] === 'clone') {
+        if ('clone' === $config['reset_strategy']) {
             $def = new Definition(CloneResetStrategy::class);
             $def->setArguments([
                 new Reference('elasticsearch_test.admin_client'),

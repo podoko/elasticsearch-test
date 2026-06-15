@@ -25,7 +25,7 @@ final class TestSuiteFinishedSubscriber implements FinishedSubscriber
             return;
         }
 
-        if (\getenv('PARATEST') !== false) {
+        if (false !== \getenv('PARATEST')) {
             return;
         }
 

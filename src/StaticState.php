@@ -34,18 +34,19 @@ final class StaticState
     // Bootstrap (called by StaticStateInitializer from the Symfony container)
     // -----------------------------------------------------------------------
 
+    /** @param string[] $managedIndexes */
     public static function initialize(
         Client $adminClient,
         array $managedIndexes,
         ResetStrategyInterface $resetStrategy,
         string $elasticsearchUrl,
     ): void {
-        self::$adminClient      = $adminClient;
-        self::$managedIndexes   = $managedIndexes;
-        self::$resetStrategy    = $resetStrategy;
+        self::$adminClient = $adminClient;
+        self::$managedIndexes = $managedIndexes;
+        self::$resetStrategy = $resetStrategy;
         self::$elasticsearchUrl = $elasticsearchUrl;
-        self::$initialized      = true;
-        self::$copiedIndexes    = [];
+        self::$initialized = true;
+        self::$copiedIndexes = [];
     }
 
     // -----------------------------------------------------------------------
@@ -85,7 +86,7 @@ final class StaticState
     {
         self::assertInitialized();
 
-        $token    = TestToken::get();
+        $token = TestToken::get();
         $strategy = self::$resetStrategy;
 
         foreach (\array_keys(self::$copiedIndexes) as $indexName) {
@@ -152,12 +153,12 @@ final class StaticState
 
     public static function reset(): void
     {
-        self::$initialized      = false;
-        self::$managedIndexes   = [];
-        self::$resetStrategy    = null;
-        self::$adminClient      = null;
+        self::$initialized = false;
+        self::$managedIndexes = [];
+        self::$resetStrategy = null;
+        self::$adminClient = null;
         self::$elasticsearchUrl = null;
-        self::$copiedIndexes    = [];
+        self::$copiedIndexes = [];
     }
 
     // -----------------------------------------------------------------------
@@ -167,13 +168,7 @@ final class StaticState
     private static function assertInitialized(): void
     {
         if (!self::$initialized) {
-            throw new \LogicException(
-                \sprintf(
-                    '%s is not initialized. Make sure the bundle is configured '
-                    . 'and that StaticStateInitializer::initialize() was called at startup.',
-                    self::class,
-                )
-            );
+            throw new \LogicException(\sprintf('%s is not initialized. Make sure the bundle is configured and that StaticStateInitializer::initialize() was called at startup.', self::class));
         }
     }
 }

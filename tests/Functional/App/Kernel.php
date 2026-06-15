@@ -40,10 +40,10 @@ final class Kernel extends BaseKernel
 
     public function registerContainerConfiguration(LoaderInterface $loader): void
     {
-        $loader->load(__DIR__ . '/config/framework.yaml');
-        $loader->load(__DIR__ . '/config/fos_elastica.yaml');
-        $loader->load(__DIR__ . '/config/elasticsearch_test.yaml');
-        $loader->load(__DIR__ . '/config/services.yaml');
+        $loader->load(__DIR__.'/config/framework.yaml');
+        $loader->load(__DIR__.'/config/fos_elastica.yaml');
+        $loader->load(__DIR__.'/config/elasticsearch_test.yaml');
+        $loader->load(__DIR__.'/config/services.yaml');
     }
 
     protected function build(ContainerBuilder $container): void
@@ -55,11 +55,11 @@ final class Kernel extends BaseKernel
 
     public function getCacheDir(): string
     {
-        return __DIR__ . '/var/cache/' . $this->environment;
+        return __DIR__.'/var/cache/'.$this->environment;
     }
 
     public function getLogDir(): string
     {
-        return __DIR__ . '/var/log';
+        return __DIR__.'/var/log';
     }
 }
