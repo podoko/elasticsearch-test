@@ -10,12 +10,12 @@ use Podoko\ElasticsearchTest\PHPUnit\ElasticsearchTestExtension;
 use Podoko\ElasticsearchTest\StaticState;
 
 /**
- * Retire le write-block sur les index sources en fin de suite PHPUnit (sortie propre).
+ * Removes the write-block from source indexes at PHPUnit suite end (clean exit).
  *
- * Non actif sous ParaTest (PARATEST=1) : les workers conservent le write-block
- * jusqu'au prochain boot kernel pour éviter les races inter-workers.
- * La couverture des crashes est assurée par register_shutdown_function (dd()/exit())
- * et par StaticStateInitializer au boot suivant (SIGKILL).
+ * Not active under ParaTest (PARATEST=1): workers keep the write-block
+ * until the next kernel boot to avoid inter-worker races.
+ * Crash coverage is handled by register_shutdown_function (dd()/exit())
+ * and by StaticStateInitializer on the next boot (SIGKILL).
  */
 final class TestSuiteFinishedSubscriber implements FinishedSubscriber
 {

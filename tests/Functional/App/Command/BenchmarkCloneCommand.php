@@ -17,7 +17,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 #[AsCommand(
     name: 'app:benchmark:clone',
-    description: 'Mesure le temps de clone et de suppression d\'un index Elasticsearch.',
+    description: 'Measures clone and deletion time for an Elasticsearch index.',
 )]
 final class BenchmarkCloneCommand extends Command
 {
@@ -31,9 +31,9 @@ final class BenchmarkCloneCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addOption('index', 'i', InputOption::VALUE_REQUIRED, 'Index source à cloner', 'articles')
-            ->addOption('token', 't', InputOption::VALUE_REQUIRED, 'Préfixe suffixant les clones', 'bench')
-            ->addOption('iterations', 'N', InputOption::VALUE_REQUIRED, 'Nombre d\'itérations', '5');
+            ->addOption('index', 'i', InputOption::VALUE_REQUIRED, 'Source index to clone', 'articles')
+            ->addOption('token', 't', InputOption::VALUE_REQUIRED, 'Suffix for clone names', 'bench')
+            ->addOption('iterations', 'N', InputOption::VALUE_REQUIRED, 'Number of iterations', '5');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -43,18 +43,18 @@ final class BenchmarkCloneCommand extends Command
         $token      = (string) $input->getOption('token');
         $iterations = max(1, (int) $input->getOption('iterations'));
 
-        $io->title(sprintf('Benchmark clone — %s (%d itération(s))', $indexName, $iterations));
+        $io->title(sprintf('Benchmark clone — %s (%d iteration(s))', $indexName, $iterations));
 
         try {
             $countResponse = $this->client->request("$indexName/_count", Request::GET);
             $docCount      = $countResponse->getData()['count'] ?? '?';
         } catch (ResponseException $e) {
-            $io->error(sprintf('Index "%s" introuvable ou inaccessible : %s', $indexName, $e->getMessage()));
+            $io->error(sprintf('Index "%s" not found or unreachable: %s', $indexName, $e->getMessage()));
 
             return Command::FAILURE;
         }
 
-        $io->text(sprintf('Source : <info>%s</info> (%s documents)', $indexName, $docCount));
+        $io->text(sprintf('Source: <info>%s</info> (%s documents)', $indexName, $docCount));
 
         /** @var float[] $cloneTimes */
         $cloneTimes = [];
@@ -64,10 +64,10 @@ final class BenchmarkCloneCommand extends Command
         for ($i = 1; $i <= $iterations; ++$i) {
             $cloneName = sprintf('%s_%s_%d', $indexName, $token, $i);
 
-            $io->section(sprintf('Itération %d/%d → %s', $i, $iterations, $cloneName));
+            $io->section(sprintf('Iteration %d/%d → %s', $i, $iterations, $cloneName));
 
             if ($this->indexExists($cloneName)) {
-                $io->text(sprintf('Clone résiduel <comment>%s</comment> supprimé.', $cloneName));
+                $io->text(sprintf('Leftover clone <comment>%s</comment> deleted.', $cloneName));
                 $this->client->request($cloneName, Request::DELETE);
             }
 
@@ -100,16 +100,16 @@ final class BenchmarkCloneCommand extends Command
             $cloneTimes[] = $cloneTotal;
 
             $io->table(
-                ['Étape', 'Durée'],
+                ['Step', 'Duration'],
                 [
-                    ['Write-block source', sprintf('%.3f s', $tBlock - $t0)],
-                    ['_clone API', sprintf('%.3f s', $tClone - $tBlock)],
-                    ['Attente green', sprintf('%.3f s', $tHealthy - $tClone)],
+                    ['Source write-block', sprintf('%.3f s', $tBlock - $t0)],
+                    ['_clone API',         sprintf('%.3f s', $tClone - $tBlock)],
+                    ['Wait for green',     sprintf('%.3f s', $tHealthy - $tClone)],
                     ['<info>Total clone</info>', sprintf('<info>%.3f s</info>', $cloneTotal)],
                 ],
             );
 
-            // Suppression
+            // Deletion
             $tDelStart = microtime(true);
             $this->client->request($cloneName, Request::DELETE);
             $tDelEnd = microtime(true);
@@ -117,9 +117,9 @@ final class BenchmarkCloneCommand extends Command
             $deleteTotal = $tDelEnd - $tDelStart;
             $deleteTimes[] = $deleteTotal;
 
-            $io->text(sprintf('Suppression : %.3f s', $deleteTotal));
+            $io->text(sprintf('Deletion: %.3f s', $deleteTotal));
 
-            // Déverrouillage de la source
+            // Unlock the source
             $this->client->request(
                 "$indexName/_settings",
                 Request::PUT,
@@ -127,21 +127,21 @@ final class BenchmarkCloneCommand extends Command
             );
         }
 
-        // Statistiques
-        $io->section('Récapitulatif statistique');
-        $io->text(sprintf('<info>%d itération(s)</info> — %s documents', $iterations, $docCount));
+        // Statistics
+        $io->section('Summary statistics');
+        $io->text(sprintf('<info>%d iteration(s)</info> — %s documents', $iterations, $docCount));
         $io->newLine();
 
         $io->table(
-            ['Métrique', 'Clone (s)', 'Suppression (s)'],
+            ['Metric', 'Clone (s)', 'Deletion (s)'],
             [
-                ['Min',    sprintf('%.3f', $this->min($cloneTimes)),    sprintf('%.3f', $this->min($deleteTimes))],
-                ['Q1',     sprintf('%.3f', $this->percentile($cloneTimes, 25)),  sprintf('%.3f', $this->percentile($deleteTimes, 25))],
-                ['Médiane',sprintf('%.3f', $this->percentile($cloneTimes, 50)),  sprintf('%.3f', $this->percentile($deleteTimes, 50))],
-                ['Moyenne',sprintf('%.3f', $this->mean($cloneTimes)),   sprintf('%.3f', $this->mean($deleteTimes))],
-                ['Q3',     sprintf('%.3f', $this->percentile($cloneTimes, 75)),  sprintf('%.3f', $this->percentile($deleteTimes, 75))],
-                ['Max',    sprintf('%.3f', $this->max($cloneTimes)),    sprintf('%.3f', $this->max($deleteTimes))],
-                ['Écart-type', sprintf('%.3f', $this->stdDev($cloneTimes)), sprintf('%.3f', $this->stdDev($deleteTimes))],
+                ['Min',      sprintf('%.3f', $this->min($cloneTimes)),                   sprintf('%.3f', $this->min($deleteTimes))],
+                ['Q1',       sprintf('%.3f', $this->percentile($cloneTimes, 25)),         sprintf('%.3f', $this->percentile($deleteTimes, 25))],
+                ['Median',   sprintf('%.3f', $this->percentile($cloneTimes, 50)),         sprintf('%.3f', $this->percentile($deleteTimes, 50))],
+                ['Mean',     sprintf('%.3f', $this->mean($cloneTimes)),                   sprintf('%.3f', $this->mean($deleteTimes))],
+                ['Q3',       sprintf('%.3f', $this->percentile($cloneTimes, 75)),         sprintf('%.3f', $this->percentile($deleteTimes, 75))],
+                ['Max',      sprintf('%.3f', $this->max($cloneTimes)),                    sprintf('%.3f', $this->max($deleteTimes))],
+                ['Std. dev.',sprintf('%.3f', $this->stdDev($cloneTimes)),                 sprintf('%.3f', $this->stdDev($deleteTimes))],
             ],
         );
 
@@ -182,7 +182,7 @@ final class BenchmarkCloneCommand extends Command
     }
 
     /**
-     * Percentile par interpolation linéaire (méthode inclusive).
+     * Percentile by linear interpolation (inclusive method).
      *
      * @param float[] $values
      */

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Podoko\ElasticsearchTest;
 
 /**
- * Résout le token worker courant.
+ * Resolves the current worker token.
  *
- * En mode mono-processus PHPUnit, retourne '1'.
- * En mode parallèle ParaTest, lit TEST_TOKEN ou UNIQUE_TEST_TOKEN
- * pour isoler chaque worker sur son propre index.
+ * In single-process PHPUnit mode, returns '1'.
+ * In parallel ParaTest mode, reads TEST_TOKEN or UNIQUE_TEST_TOKEN
+ * to isolate each worker on its own index.
  */
 final class TestToken
 {
@@ -21,9 +21,9 @@ final class TestToken
             return self::$resolved;
         }
 
-        // ParaTest injecte TEST_TOKEN (entier, ex: "1", "2", "3") ou
-        // UNIQUE_TEST_TOKEN (UUID, disponible depuis paratest 6.x).
-        // On préfère TEST_TOKEN pour des noms d'index courts.
+        // ParaTest injects TEST_TOKEN (integer, e.g. "1", "2", "3") or
+        // UNIQUE_TEST_TOKEN (UUID, available since paratest 6.x).
+        // TEST_TOKEN is preferred for shorter index names.
         $token = \getenv('TEST_TOKEN');
 
         if ($token === false || $token === '') {
@@ -34,14 +34,14 @@ final class TestToken
             $token = '1';
         }
 
-        // Sanitize : on ne garde que les caractères valides dans un nom d'index ES
-        // (alphanumériques et tirets).
+        // Sanitize: keep only valid characters for an ES index name
+        // (alphanumerics and hyphens).
         $token = \preg_replace('/[^a-zA-Z0-9\-]/', '-', $token);
 
         return self::$resolved = $token;
     }
 
-    /** Réinitialise le cache (utile pour les tests unitaires de la lib elle-même). */
+    /** Resets the cached token (only needed for unit tests of this library itself). */
     public static function reset(): void
     {
         self::$resolved = null;

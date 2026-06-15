@@ -15,8 +15,8 @@ use Symfony\Component\DependencyInjection\Reference;
 final class PodokoElasticsearchTestExtension extends Extension
 {
     /**
-     * Override de l'alias pour correspondre au préfixe YAML "elasticsearch_test:".
-     * Sans cette méthode, Symfony calcule "podoko_elasticsearch_test" depuis le nom de classe.
+     * Overrides the alias to match the YAML prefix "elasticsearch_test:".
+     * Without this method, Symfony derives "podoko_elasticsearch_test" from the class name.
      */
     public function getAlias(): string
     {
@@ -37,13 +37,13 @@ final class PodokoElasticsearchTestExtension extends Extension
         $container->setParameter('elasticsearch_test.reset_strategy', $config['reset_strategy']);
 
         // -----------------------------------------------------------------------
-        // Client admin brut — utilisé par CloneResetStrategy pour les opérations
-        // structurelles (clone, delete, refresh…). Distinct du client FOSElastica
-        // pour ne jamais être redirigé vers les index de travail suffixés.
+        // Raw admin client — used by CloneResetStrategy for structural operations
+        // (clone, delete, refresh…). Separate from the FOSElastica client
+        // to never be redirected to the suffixed worker indexes.
         //
-        // Elastica v7 Transport\Http construit l'URL finale par concaténation :
+        // Elastica v7 Transport\Http builds the final URL by concatenation:
         //   baseUri . requestPath
-        // → la baseUri DOIT se terminer par '/' pour éviter des URL incorrectes.
+        // → baseUri MUST end with '/' to avoid malformed URLs.
         // -----------------------------------------------------------------------
         $adminClientDef = new Definition(Client::class);
         $adminClientDef->setArguments([[
@@ -52,16 +52,16 @@ final class PodokoElasticsearchTestExtension extends Extension
         $container->setDefinition('elasticsearch_test.admin_client', $adminClientDef);
 
         // -----------------------------------------------------------------------
-        // ResetStrategy (clone par défaut)
+        // ResetStrategy (clone by default)
         // -----------------------------------------------------------------------
         $this->registerResetStrategy($container, $config);
 
         // -----------------------------------------------------------------------
-        // StaticStateInitializer — alimente StaticState au boot du kernel.
+        // StaticStateInitializer — populates StaticState at kernel boot.
         //
-        // Rendu public pour que PodokoElasticsearchTestBundle::boot() puisse le
-        // récupérer via $this->container->get(...) et forcer son instanciation
-        // (le constructeur appelle StaticState::initialize()).
+        // Made public so PodokoElasticsearchTestBundle::boot() can
+        // retrieve it via $this->container->get(...) and force its instantiation
+        // (the constructor calls StaticState::initialize()).
         // -----------------------------------------------------------------------
         $initializerDef = new Definition(StaticStateInitializer::class);
         $initializerDef->setPublic(true);
@@ -75,7 +75,7 @@ final class PodokoElasticsearchTestExtension extends Extension
     }
 
     // -----------------------------------------------------------------------
-    // Privé
+    // Private
     // -----------------------------------------------------------------------
 
     private function registerResetStrategy(ContainerBuilder $container, array $config): void
@@ -88,6 +88,6 @@ final class PodokoElasticsearchTestExtension extends Extension
             $container->setDefinition('elasticsearch_test.reset_strategy', $def);
         }
 
-        // truncate et recreate seront ajoutés dans une version ultérieure.
+        // truncate and recreate will be added in a future version.
     }
 }

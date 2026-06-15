@@ -7,14 +7,14 @@ namespace Podoko\ElasticsearchTest\Tests\Functional;
 use Podoko\ElasticsearchTest\Tests\Functional\Support\FunctionalTestCase;
 
 /**
- * Vérifie que chaque test démarre avec exactement les documents du seed (3 fixtures).
+ * Verifies that each test starts with exactly the seed documents (3 fixtures).
  *
- * Ce test est le gardien de deux invariants critiques :
- *   - Les fixtures sont bien injectées dans le seed (A2 : SeedBuilder câblé).
- *   - Chaque test repart de la baseline identique, quel que soit l'ordre d'exécution.
+ * This test guards two critical invariants:
+ *   - Fixtures are correctly injected into the seed.
+ *   - Each test starts from the same baseline regardless of execution order.
  *
- * En mode ParaTest, plusieurs workers exécutent ces méthodes en parallèle.
- * Si un worker voit un compte différent de 3, c'est une collision inter-workers.
+ * Under ParaTest, multiple workers run these methods in parallel.
+ * If a worker sees a count other than 3, that is a cross-worker collision.
  */
 final class SeedBaselineTest extends FunctionalTestCase
 {
@@ -25,7 +25,7 @@ final class SeedBaselineTest extends FunctionalTestCase
         self::assertSame(
             self::BASELINE_COUNT,
             $this->countAll(),
-            'Le clone doit contenir exactement les 3 fixtures du seed au début du test.'
+            'The clone must contain exactly 3 seed fixtures at the start of the test.'
         );
     }
 
@@ -34,7 +34,7 @@ final class SeedBaselineTest extends FunctionalTestCase
         self::assertSame(
             self::BASELINE_COUNT,
             $this->countAll(),
-            'Le clone doit être réinitialisé entre les tests : 3 fixtures attendues.'
+            'The clone must be reset between tests: 3 fixtures expected.'
         );
     }
 
@@ -43,18 +43,18 @@ final class SeedBaselineTest extends FunctionalTestCase
         self::assertSame(
             self::BASELINE_COUNT,
             $this->countAll(),
-            'Même résultat pour un troisième test consécutif.'
+            'Same result for a third consecutive test.'
         );
     }
 
     /**
-     * Vérifie que les IDs fixes des fixtures baseline sont bien présents.
+     * Verifies that the fixed IDs of the baseline fixtures are present.
      */
     public function test_fixture_ids_are_present(): void
     {
         $index = $this->indexer()->getIndex();
 
-        // Rechercher chaque document baseline par son id
+        // Look up each baseline document by its id
         foreach (['1', '2', '3'] as $fixtureId) {
             $document = $index->getDocument($fixtureId);
             self::assertSame($fixtureId, $document->getId());

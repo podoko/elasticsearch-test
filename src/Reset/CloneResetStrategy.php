@@ -9,15 +9,15 @@ use Elastica\Exception\ResponseException;
 use Elastica\Request;
 
 /**
- * Stratégie clone — copie depuis l'index source préexistant.
+ * Clone strategy — copies from a pre-existing source index.
  *
- * L'utilisateur est responsable de créer et peupler ses index avant la suite
- * (via fos:elastica:populate, fixtures Symfony, setUpBeforeClass…).
+ * The user is responsible for creating and populating their indexes before the suite
+ * (via fos:elastica:populate, Symfony fixtures, setUpBeforeClass…).
  *
- * Cycle de vie :
- *   prepare()       → write-block idempotent sur <index>, puis _clone vers <index>_<token>
- *   cleanup()       → supprime <index>_<token>
- *   unlockSource()  → retire le write-block sur <index> (fin de suite ou crash recovery)
+ * Lifecycle:
+ *   prepare()       → idempotent write-block on <index>, then _clone to <index>_<token>
+ *   cleanup()       → deletes <index>_<token>
+ *   unlockSource()  → removes the write-block on <index> (suite end or crash recovery)
  */
 final class CloneResetStrategy implements ResetStrategyInterface
 {
@@ -33,19 +33,19 @@ final class CloneResetStrategy implements ResetStrategyInterface
     {
         $targetName = self::workerName($indexName, $token);
 
-        // Write-block idempotent sur la source (requis par _clone, safe en parallèle).
+        // Idempotent write-block on the source (required by _clone, safe in parallel).
         $this->adminClient->request(
             "$indexName/_settings",
             Request::PUT,
             ['index' => ['blocks' => ['write' => true]]],
         );
 
-        // Supprime un clone résiduel éventuel (crash précédent).
+        // Delete any leftover clone from a previous crash.
         if ($this->indexExists($targetName)) {
             $this->adminClient->request($targetName, Request::DELETE);
         }
 
-        // Clone source → worker (writable immédiatement, 0 replica pour rester green).
+        // Clone source → worker (immediately writable, 0 replicas to stay green).
         $this->adminClient->request(
             "$indexName/_clone/$targetName",
             Request::POST,

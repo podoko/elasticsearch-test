@@ -13,26 +13,26 @@ use Podoko\ElasticsearchTest\PHPUnit\Subscriber\TestPreparedSubscriber;
 use Podoko\ElasticsearchTest\PHPUnit\Subscriber\TestSuiteFinishedSubscriber;
 
 /**
- * Extension PHPUnit 11 — point d'entrée de la librairie.
+ * PHPUnit 11 extension — entry point of the library.
  *
- * À enregistrer dans phpunit.xml :
+ * Register in phpunit.xml:
  *
  *   <extensions>
  *     <bootstrap class="Podoko\ElasticsearchTest\PHPUnit\ElasticsearchTestExtension"/>
  *   </extensions>
  *
- * Cette extension ne lit aucun paramètre : toute la configuration (URL Elasticsearch,
- * index gérés, stratégie, fixtures) provient du bundle Symfony
+ * This extension reads no parameters: all configuration (Elasticsearch URL,
+ * managed indexes, strategy, fixtures) comes from the Symfony bundle
  * (config/packages/test/elasticsearch_test.yaml).
  *
- * Rôle de cette classe :
- *   1. Positionner $bootstrapped = true (sentinelle utilisée par RefreshForcingClient::getIndex()
- *      pour n'activer le suffixage qu'en contexte PHPUnit).
- *   2. Enregistrer les subscribers PHPUnit qui clonent/suppriment l'index de travail.
+ * Role of this class:
+ *   1. Set $bootstrapped = true (sentinel used by RefreshForcingClient::getIndex()
+ *      to enable suffixing only within PHPUnit context).
+ *   2. Register the PHPUnit subscribers that clone/delete the worker index.
  *
- * StaticState est initialisé séparément par PodokoElasticsearchTestBundle::boot()
- * (appel eager de StaticStateInitializer) lors du premier boot du kernel Symfony, dans
- * le setUp() du test. C'est donc garanti avant l'émission de Test\Prepared.
+ * StaticState is initialized separately by PodokoElasticsearchTestBundle::boot()
+ * (eager call to StaticStateInitializer) on the first Symfony kernel boot, in
+ * the test setUp(). This is therefore guaranteed before Test\Prepared is dispatched.
  */
 final class ElasticsearchTestExtension implements Extension
 {
@@ -43,7 +43,7 @@ final class ElasticsearchTestExtension implements Extension
         return self::$bootstrapped;
     }
 
-    /** Réinitialise le flag (tests unitaires de la lib elle-même). */
+    /** Resets the flag (only needed for unit tests of this library itself). */
     public static function reset(): void
     {
         self::$bootstrapped = false;

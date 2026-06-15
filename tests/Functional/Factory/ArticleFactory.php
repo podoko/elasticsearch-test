@@ -12,8 +12,8 @@ use Zenstruck\Foundry\ObjectFactory;
  */
 final class ArticleFactory extends ObjectFactory
 {
-    private const CATEGORIES = ['tech', 'science', 'sport', 'culture', 'politique', 'économie'];
-    private const TAGS       = ['php', 'python', 'docker', 'kubernetes', 'ia', 'cloud', 'linux', 'web', 'data', 'devops'];
+    private const CATEGORIES = ['tech', 'science', 'sport', 'culture', 'politics', 'economics'];
+    private const TAGS       = ['php', 'python', 'docker', 'kubernetes', 'ai', 'cloud', 'linux', 'web', 'data', 'devops'];
 
     public static function class(): string
     {

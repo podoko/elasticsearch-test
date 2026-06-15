@@ -11,8 +11,8 @@ use Podoko\ElasticsearchTest\StaticState;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**
- * Appelé après chaque test (quelle que soit son issue).
- * Supprime l'index de travail du worker courant.
+ * Called after each test (regardless of its outcome).
+ * Deletes the current worker's index.
  */
 final class TestFinishedSubscriber implements FinishedSubscriber
 {

@@ -19,7 +19,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 #[AsCommand(
     name: 'app:benchmark:seed',
-    description: 'Peuple l\'index articles avec N documents pour les benchmarks de clone.',
+    description: 'Populates the articles index with N documents for clone benchmarks.',
 )]
 final class BenchmarkSeedCommand extends Command
 {
@@ -33,8 +33,8 @@ final class BenchmarkSeedCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addOption('count', 'c', InputOption::VALUE_REQUIRED, 'Nombre de documents à indexer', '10000')
-            ->addOption('batch', 'b', InputOption::VALUE_REQUIRED, 'Taille des batches d\'indexation', '500');
+            ->addOption('count', 'c', InputOption::VALUE_REQUIRED, 'Number of documents to index', '10000')
+            ->addOption('batch', 'b', InputOption::VALUE_REQUIRED, 'Batch size for indexing', '500');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -43,12 +43,12 @@ final class BenchmarkSeedCommand extends Command
         $count = (int) $input->getOption('count');
         $batch = (int) $input->getOption('batch');
 
-        $io->title(sprintf('Seed benchmark — %d documents (batches de %d)', $count, $batch));
+        $io->title(sprintf('Seed benchmark — %d documents (batches of %d)', $count, $batch));
 
-        // Supprime et recrée l'index.
+        // Delete and recreate the index.
         try {
             $this->client->request('articles', 'DELETE');
-            $io->text('Index <info>articles</info> supprimé.');
+            $io->text('Index <info>articles</info> deleted.');
         } catch (\Elastica\Exception\ResponseException $e) {
             if ($e->getResponse()->getStatus() !== 404) {
                 throw $e;
@@ -71,7 +71,7 @@ final class BenchmarkSeedCommand extends Command
                 ],
             ],
         ]);
-        $io->text('Index <info>articles</info> recréé.');
+        $io->text('Index <info>articles</info> recreated.');
 
         $index = $this->client->getIndex('articles');
 
@@ -104,7 +104,7 @@ final class BenchmarkSeedCommand extends Command
 
         $output->writeln('');
         $io->success(sprintf(
-            '%d documents indexés en %.2fs (%.0f docs/s)',
+            '%d documents indexed in %.2fs (%.0f docs/s)',
             $indexed,
             $elapsed,
             $indexed / $elapsed,

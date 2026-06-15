@@ -101,7 +101,7 @@ final class StaticStateTest extends TestCase
 
         $this->strategy->method('prepare');
 
-        // On ne copie que 'posts', pas 'comments'
+        // Only copy 'posts', not 'comments'
         StaticState::copy('posts');
 
         $this->strategy
@@ -149,7 +149,7 @@ final class StaticStateTest extends TestCase
 
     public function test_unlock_source_indexes_is_noop_when_not_initialized(): void
     {
-        // StaticState non initialisé — ne doit pas lever d'exception.
+        // StaticState not initialized — must not throw.
         $this->strategy
             ->expects($this->never())
             ->method('unlockSource');

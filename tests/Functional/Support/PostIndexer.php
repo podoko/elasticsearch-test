@@ -10,11 +10,10 @@ use Podoko\ElasticsearchTest\Tests\Functional\Model\Post;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Helper pour indexer des Post dans fos_elastica.index.posts et forcer un refresh.
+ * Helper to index Posts into fos_elastica.index.posts and force a refresh.
  *
- * La lib ne force aucun refresh automatique — c'est à la charge des tests.
- * Ce helper regroupe l'indexation + refresh pour rendre les documents visibles
- * immédiatement après l'appel.
+ * The library does not force any automatic refresh — that is the test's responsibility.
+ * This helper combines indexing + refresh to make documents visible immediately after the call.
  */
 final class PostIndexer
 {
@@ -28,7 +27,7 @@ final class PostIndexer
     }
 
     /**
-     * Indexe un ou plusieurs Post et force un refresh pour les rendre visibles.
+     * Indexes one or more Posts and forces a refresh to make them visible.
      */
     public function index(Post ...$posts): void
     {
@@ -47,8 +46,8 @@ final class PostIndexer
     }
 
     /**
-     * Force un refresh de l'index sans indexer de nouveau document.
-     * Utile après des opérations de suppression.
+     * Forces an index refresh without indexing any new document.
+     * Useful after delete operations.
      */
     public function refresh(): void
     {
@@ -56,7 +55,7 @@ final class PostIndexer
     }
 
     /**
-     * Retourne le nombre total de documents dans l'index clone actuel.
+     * Returns the total number of documents in the current clone index.
      */
     public function countAll(): int
     {
@@ -64,7 +63,7 @@ final class PostIndexer
     }
 
     /**
-     * Supprime un document par id et force un refresh.
+     * Deletes a document by id and forces a refresh.
      */
     public function delete(string $id): void
     {
@@ -73,7 +72,7 @@ final class PostIndexer
     }
 
     /**
-     * Expose l'index sous-jacent pour des assertions bas niveau.
+     * Exposes the underlying index for low-level assertions.
      */
     public function getIndex(): Index
     {

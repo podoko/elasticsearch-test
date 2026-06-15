@@ -14,11 +14,11 @@ use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Zenstruck\Foundry\ZenstruckFoundryBundle;
 
 /**
- * Kernel minimal pour les tests fonctionnels de la lib.
+ * Minimal kernel for the library's functional tests.
  *
- * Stack : FrameworkBundle + FOSElasticaBundle + PodokoElasticsearchTestBundle + ZenstruckFoundryBundle.
- * Pas de Doctrine — les données sont poussées directement dans Elasticsearch
- * via le client FOSElastica (index.addDocuments()), avec Foundry en mode ObjectFactory.
+ * Stack: FrameworkBundle + FOSElasticaBundle + PodokoElasticsearchTestBundle + ZenstruckFoundryBundle.
+ * No Doctrine — data is pushed directly into Elasticsearch
+ * via the FOSElastica client (index.addDocuments()), with Foundry in ObjectFactory mode.
  */
 final class Kernel extends BaseKernel
 {
@@ -48,8 +48,8 @@ final class Kernel extends BaseKernel
 
     protected function build(ContainerBuilder $container): void
     {
-        // Rend tous les services publics en mode test pour un accès simplifié
-        // depuis les cas de test via $this->getContainer()->get(...)
+        // Make all services public in test mode for easy access
+        // from test cases via $this->getContainer()->get(...)
         $container->setParameter('kernel.secret', 'test-secret-for-functional-tests');
     }
 

@@ -11,10 +11,10 @@ use Podoko\ElasticsearchTest\Tests\Functional\Factory\PostFactory;
 use Podoko\ElasticsearchTest\Tests\Functional\Support\FunctionalTestCase;
 
 /**
- * Vérifie le comportement de clonage paresseux de LazyCloneIndex.
+ * Verifies the lazy-cloning behaviour of LazyCloneIndex.
  *
- * Avant toute écriture, l'index pointe sur la source (posts).
- * Après la première écriture, il pointe sur le clone worker (posts_<token>).
+ * Before any write, the index points to the source (posts).
+ * After the first write, it points to the worker clone (posts_<token>).
  */
 final class SuffixingTest extends FunctionalTestCase
 {
@@ -22,7 +22,7 @@ final class SuffixingTest extends FunctionalTestCase
     {
         self::assertTrue(
             ElasticsearchTestExtension::isBootstrapped(),
-            'L\'extension PHPUnit doit être bootstrappée pour activer le suffixage.'
+            'The PHPUnit extension must be bootstrapped to activate suffixing.'
         );
     }
 
@@ -33,7 +33,7 @@ final class SuffixingTest extends FunctionalTestCase
         self::assertSame(
             'posts',
             $index->getName(),
-            'Avant toute écriture, l\'index doit pointer sur la source.'
+            'Before any write, the index must point to the source.'
         );
     }
 
@@ -46,18 +46,18 @@ final class SuffixingTest extends FunctionalTestCase
         self::assertSame(
             'posts_' . TestToken::get(),
             $index->getName(),
-            'Après la première écriture, l\'index doit pointer sur le clone worker.'
+            'After the first write, the index must point to the worker clone.'
         );
     }
 
     public function test_no_clone_created_for_read_only_test(): void
     {
-        // Un test qui ne fait que lire ne doit pas créer de clone.
+        // A read-only test must not create a clone.
         $this->countAll();
 
         self::assertFalse(
             StaticState::hasCopy('posts'),
-            'Un test sans écriture ne doit pas créer de clone.'
+            'A read-only test must not create a clone.'
         );
     }
 

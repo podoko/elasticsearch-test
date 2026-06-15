@@ -8,9 +8,9 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
- * Configuration du bundle elasticsearch_test.
+ * Configuration for the elasticsearch_test bundle.
  *
- * Exemple dans config/packages/test/elasticsearch_test.yaml :
+ * Example in config/packages/test/elasticsearch_test.yaml:
  *
  *   elasticsearch_test:
  *     enabled: true
@@ -34,17 +34,17 @@ final class Configuration implements ConfigurationInterface
                 ->end()
                 ->scalarNode('elasticsearch_url')
                     ->defaultValue('%env(ELASTICSEARCH_URL)%')
-                    ->info('URL du cluster Elasticsearch (ex: http://localhost:9200).')
+                    ->info('Elasticsearch cluster URL (e.g. http://localhost:9200).')
                 ->end()
                 ->arrayNode('managed_indexes')
-                    ->info('Liste des noms logiques des index FOSElastica à isoler.')
+                    ->info('Logical names of FOSElastica indexes to isolate.')
                     ->scalarPrototype()->end()
                     ->defaultValue([])
                 ->end()
                 ->enumNode('reset_strategy')
                     ->values(['clone', 'truncate', 'recreate'])
                     ->defaultValue('clone')
-                    ->info('Stratégie de remise à zéro entre les tests.')
+                    ->info('Reset strategy between tests.')
                 ->end()
             ->end()
         ;

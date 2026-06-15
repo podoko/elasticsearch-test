@@ -21,21 +21,21 @@ final class PodokoElasticsearchTestBundle extends Bundle
     {
         parent::build($container);
 
-        // Suffixage des index FOSElastica avec le token worker.
-        // Ce pass doit s'exécuter après la compilation de FOSElasticaBundle.
+        // Suffix FOSElastica indexes with the worker token.
+        // This pass must run after FOSElasticaBundle compiles.
         $container->addCompilerPass(new FosClientDecoratorPass());
     }
 
     /**
-     * Instancie StaticStateInitializer de façon eager à chaque boot du kernel.
+     * Eagerly instantiates StaticStateInitializer on every kernel boot.
      *
-     * StaticStateInitializer::__construct() appelle StaticState::initialize(),
-     * ce qui rend StaticState prêt avant l'émission de Test\Prepared (PHPUnit).
-     * Sans cette instanciation forcée, Symfony ne crée le service que si quelque
-     * chose le demande explicitement — ce qui n'est pas garanti.
+     * StaticStateInitializer::__construct() calls StaticState::initialize(),
+     * making StaticState ready before Test\Prepared is dispatched (PHPUnit).
+     * Without this forced instantiation, Symfony only creates the service if
+     * something explicitly requests it — which is not guaranteed.
      *
-     * Le service est rendu public dans PodokoElasticsearchTestExtension pour
-     * permettre cet accès depuis boot().
+     * The service is made public in PodokoElasticsearchTestExtension to
+     * allow access from boot().
      */
     public function boot(): void
     {
