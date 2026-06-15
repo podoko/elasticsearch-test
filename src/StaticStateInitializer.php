@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama;
+namespace Podoko\ElasticsearchTest;
 
 use Elastica\Client;
-use Podoko\ElasticsearchDama\Reset\ResetStrategyInterface;
+use Podoko\ElasticsearchTest\Reset\ResetStrategyInterface;
 
 /**
  * Service Symfony dont le seul rôle est d'alimenter StaticState au boot du kernel.

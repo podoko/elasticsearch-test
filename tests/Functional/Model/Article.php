@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\Tests\Functional\Model;
+namespace Podoko\ElasticsearchTest\Tests\Functional\Model;
 
 final class Article
 {

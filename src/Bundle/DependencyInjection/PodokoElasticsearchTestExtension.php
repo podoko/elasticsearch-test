@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\Bundle\DependencyInjection;
+namespace Podoko\ElasticsearchTest\Bundle\DependencyInjection;
 
 use Elastica\Client;
-use Podoko\ElasticsearchDama\Reset\CloneResetStrategy;
-use Podoko\ElasticsearchDama\StaticStateInitializer;
+use Podoko\ElasticsearchTest\Reset\CloneResetStrategy;
+use Podoko\ElasticsearchTest\StaticStateInitializer;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Reference;
 
-final class PodokoElasticsearchDamaExtension extends Extension
+final class PodokoElasticsearchTestExtension extends Extension
 {
     /**
-     * Override de l'alias pour correspondre au préfixe YAML "elasticsearch_dama:".
-     * Sans cette méthode, Symfony calcule "podoko_elasticsearch_dama" depuis le nom de classe.
+     * Override de l'alias pour correspondre au préfixe YAML "elasticsearch_test:".
+     * Sans cette méthode, Symfony calcule "podoko_elasticsearch_test" depuis le nom de classe.
      */
     public function getAlias(): string
     {
-        return 'elasticsearch_dama';
+        return 'elasticsearch_test';
     }
 
     public function load(array $configs, ContainerBuilder $container): void
@@ -32,9 +32,9 @@ final class PodokoElasticsearchDamaExtension extends Extension
             return;
         }
 
-        $container->setParameter('elasticsearch_dama.elasticsearch_url', $config['elasticsearch_url']);
-        $container->setParameter('elasticsearch_dama.managed_indexes', $config['managed_indexes']);
-        $container->setParameter('elasticsearch_dama.reset_strategy', $config['reset_strategy']);
+        $container->setParameter('elasticsearch_test.elasticsearch_url', $config['elasticsearch_url']);
+        $container->setParameter('elasticsearch_test.managed_indexes', $config['managed_indexes']);
+        $container->setParameter('elasticsearch_test.reset_strategy', $config['reset_strategy']);
 
         // -----------------------------------------------------------------------
         // Client admin brut — utilisé par CloneResetStrategy pour les opérations
@@ -49,7 +49,7 @@ final class PodokoElasticsearchDamaExtension extends Extension
         $adminClientDef->setArguments([[
             'url' => $config['elasticsearch_url'] . '/',
         ]]);
-        $container->setDefinition('elasticsearch_dama.admin_client', $adminClientDef);
+        $container->setDefinition('elasticsearch_test.admin_client', $adminClientDef);
 
         // -----------------------------------------------------------------------
         // ResetStrategy (clone par défaut)
@@ -59,19 +59,19 @@ final class PodokoElasticsearchDamaExtension extends Extension
         // -----------------------------------------------------------------------
         // StaticStateInitializer — alimente StaticState au boot du kernel.
         //
-        // Rendu public pour que PodokoElasticsearchDamaBundle::boot() puisse le
+        // Rendu public pour que PodokoElasticsearchTestBundle::boot() puisse le
         // récupérer via $this->container->get(...) et forcer son instanciation
         // (le constructeur appelle StaticState::initialize()).
         // -----------------------------------------------------------------------
         $initializerDef = new Definition(StaticStateInitializer::class);
         $initializerDef->setPublic(true);
         $initializerDef->setArguments([
-            new Reference('elasticsearch_dama.admin_client'),
-            '%elasticsearch_dama.managed_indexes%',
-            new Reference('elasticsearch_dama.reset_strategy'),
-            '%elasticsearch_dama.elasticsearch_url%',
+            new Reference('elasticsearch_test.admin_client'),
+            '%elasticsearch_test.managed_indexes%',
+            new Reference('elasticsearch_test.reset_strategy'),
+            '%elasticsearch_test.elasticsearch_url%',
         ]);
-        $container->setDefinition('elasticsearch_dama.static_state_initializer', $initializerDef);
+        $container->setDefinition('elasticsearch_test.static_state_initializer', $initializerDef);
     }
 
     // -----------------------------------------------------------------------
@@ -83,9 +83,9 @@ final class PodokoElasticsearchDamaExtension extends Extension
         if ($config['reset_strategy'] === 'clone') {
             $def = new Definition(CloneResetStrategy::class);
             $def->setArguments([
-                new Reference('elasticsearch_dama.admin_client'),
+                new Reference('elasticsearch_test.admin_client'),
             ]);
-            $container->setDefinition('elasticsearch_dama.reset_strategy', $def);
+            $container->setDefinition('elasticsearch_test.reset_strategy', $def);
         }
 
         // truncate et recreate seront ajoutés dans une version ultérieure.

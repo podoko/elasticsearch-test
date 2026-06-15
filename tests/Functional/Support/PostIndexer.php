@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\Tests\Functional\Support;
+namespace Podoko\ElasticsearchTest\Tests\Functional\Support;
 
 use Elastica\Document;
 use Elastica\Index;
-use Podoko\ElasticsearchDama\Tests\Functional\Model\Post;
+use Podoko\ElasticsearchTest\Tests\Functional\Model\Post;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

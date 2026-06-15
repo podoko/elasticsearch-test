@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\Tests\Unit;
+namespace Podoko\ElasticsearchTest\Tests\Unit;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Podoko\ElasticsearchDama\Reset\ResetStrategyInterface;
-use Podoko\ElasticsearchDama\StaticState;
-use Podoko\ElasticsearchDama\TestToken;
+use Podoko\ElasticsearchTest\Reset\ResetStrategyInterface;
+use Podoko\ElasticsearchTest\StaticState;
+use Podoko\ElasticsearchTest\TestToken;
 
 final class StaticStateTest extends TestCase
 {

@@ -17,12 +17,12 @@
     </testsuites>
 
     <!--
-        Extension elasticsearch-dama — active le suffixage runtime des index FOSElastica.
+        Extension elasticsearch-test — active le suffixage runtime des index FOSElastica.
         Toute la configuration (URL, index gérés, fixtures) vient du bundle Symfony
-        (tests/Functional/App/config/elasticsearch_dama.yaml) et non de ces paramètres.
+        (tests/Functional/App/config/elasticsearch_test.yaml) et non de ces paramètres.
     -->
     <extensions>
-        <bootstrap class="Podoko\ElasticsearchDama\PHPUnit\ElasticsearchDamaExtension"/>
+        <bootstrap class="Podoko\ElasticsearchTest\PHPUnit\ElasticsearchTestExtension"/>
         <!-- Foundry v2.9+ requiert son extension pour gérer le cycle de vie des factories -->
         <bootstrap class="Zenstruck\Foundry\PHPUnit\FoundryExtension"/>
     </extensions>
@@ -30,7 +30,7 @@
     <php>
         <env name="APP_ENV" value="test"/>
         <env name="APP_SECRET" value="test-secret"/>
-        <!-- URL complète pour le client admin DAMA (PodokoElasticsearchDamaExtension) -->
+        <!-- URL complète pour le client admin (PodokoElasticsearchTestExtension) -->
         <env name="ELASTICSEARCH_URL" value="http://localhost:9200"/>
         <!-- Host/port séparés pour FOSElastica (fos_elastica.yaml mini-kernel) -->
         <env name="ELASTICSEARCH_HOST" value="localhost"/>

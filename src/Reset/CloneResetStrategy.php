@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\Reset;
+namespace Podoko\ElasticsearchTest\Reset;
 
 use Elastica\Client;
 use Elastica\Exception\ResponseException;

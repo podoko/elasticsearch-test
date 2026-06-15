@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama;
+namespace Podoko\ElasticsearchTest;
 
 use Elastica\Client;
-use Podoko\ElasticsearchDama\Reset\ResetStrategyInterface;
+use Podoko\ElasticsearchTest\Reset\ResetStrategyInterface;
 
 /**
  * Registre statique central — équivalent du StaticDriver de dama/doctrine-test-bundle.

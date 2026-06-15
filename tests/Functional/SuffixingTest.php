@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\Tests\Functional;
+namespace Podoko\ElasticsearchTest\Tests\Functional;
 
-use Podoko\ElasticsearchDama\PHPUnit\ElasticsearchDamaExtension;
-use Podoko\ElasticsearchDama\StaticState;
-use Podoko\ElasticsearchDama\TestToken;
-use Podoko\ElasticsearchDama\Tests\Functional\Factory\PostFactory;
-use Podoko\ElasticsearchDama\Tests\Functional\Support\FunctionalTestCase;
+use Podoko\ElasticsearchTest\PHPUnit\ElasticsearchTestExtension;
+use Podoko\ElasticsearchTest\StaticState;
+use Podoko\ElasticsearchTest\TestToken;
+use Podoko\ElasticsearchTest\Tests\Functional\Factory\PostFactory;
+use Podoko\ElasticsearchTest\Tests\Functional\Support\FunctionalTestCase;
 
 /**
  * Vérifie le comportement de clonage paresseux de LazyCloneIndex.
@@ -21,7 +21,7 @@ final class SuffixingTest extends FunctionalTestCase
     public function test_extension_is_bootstrapped(): void
     {
         self::assertTrue(
-            ElasticsearchDamaExtension::isBootstrapped(),
+            ElasticsearchTestExtension::isBootstrapped(),
             'L\'extension PHPUnit doit être bootstrappée pour activer le suffixage.'
         );
     }

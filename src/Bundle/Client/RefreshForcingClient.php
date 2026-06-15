@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\Bundle\Client;
+namespace Podoko\ElasticsearchTest\Bundle\Client;
 
 use Elastica\Index as BaseIndex;
 use FOS\ElasticaBundle\Elastica\Client as FosClient;
-use Podoko\ElasticsearchDama\PHPUnit\ElasticsearchDamaExtension;
+use Podoko\ElasticsearchTest\PHPUnit\ElasticsearchTestExtension;
 
 /**
  * Sous-classe du client FOSElastica qui suffixe getIndex() avec le token worker PHPUnit.
@@ -17,7 +17,7 @@ use Podoko\ElasticsearchDama\PHPUnit\ElasticsearchDamaExtension;
  * - les événements Symfony (PreElasticaRequestEvent, PostElasticaRequestEvent…)
  * - le logging ElasticaLogger
  *
- * Le suffixage n'est actif que lorsque ElasticsearchDamaExtension::isBootstrapped()
+ * Le suffixage n'est actif que lorsque ElasticsearchTestExtension::isBootstrapped()
  * est true — uniquement sous PHPUnit. Une requête HTTP ou une commande Symfony en
  * APP_ENV=test ne déclenchent pas le bootstrap → comportement normal sans redirection.
  *
@@ -49,7 +49,7 @@ class RefreshForcingClient extends FosClient
      */
     public function getIndex(string $name): BaseIndex
     {
-        if ($this->suffixIndexes && ElasticsearchDamaExtension::isBootstrapped()) {
+        if ($this->suffixIndexes && ElasticsearchTestExtension::isBootstrapped()) {
             return new LazyCloneIndex($name, $this);
         }
 

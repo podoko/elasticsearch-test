@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\Bundle\DependencyInjection\Compiler;
+namespace Podoko\ElasticsearchTest\Bundle\DependencyInjection\Compiler;
 
-use Podoko\ElasticsearchDama\Bundle\Client\RefreshForcingClient;
+use Podoko\ElasticsearchTest\Bundle\Client\RefreshForcingClient;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -17,7 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  *   4. Auto-découvre les index gérés si la liste est vide dans la configuration.
  *
  * Le suffixage effectif n'a lieu qu'au runtime, dans RefreshForcingClient::getIndex(),
- * et uniquement quand ElasticsearchDamaExtension::isBootstrapped() est true —
+ * et uniquement quand ElasticsearchTestExtension::isBootstrapped() est true —
  * c'est-à-dire uniquement sous PHPUnit. Les requêtes HTTP et commandes Symfony
  * en env de test ne sont pas affectées.
  */
@@ -25,7 +25,7 @@ final class FosClientDecoratorPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
-        if (!$container->hasParameter('elasticsearch_dama.managed_indexes')) {
+        if (!$container->hasParameter('elasticsearch_test.managed_indexes')) {
             return;
         }
 
@@ -53,11 +53,11 @@ final class FosClientDecoratorPass implements CompilerPassInterface
         // 3. Auto-découverte des index gérés si la liste est vide
         // -----------------------------------------------------------------------
         /** @var string[] $managedIndexes */
-        $managedIndexes = $container->getParameter('elasticsearch_dama.managed_indexes');
+        $managedIndexes = $container->getParameter('elasticsearch_test.managed_indexes');
 
         if (empty($managedIndexes)) {
             $managedIndexes = $this->discoverAllFosIndexes($container);
-            $container->setParameter('elasticsearch_dama.managed_indexes', $managedIndexes);
+            $container->setParameter('elasticsearch_test.managed_indexes', $managedIndexes);
         }
 
     }
@@ -89,7 +89,7 @@ final class FosClientDecoratorPass implements CompilerPassInterface
         if (!empty($aliasedIndexes)) {
             throw new \RuntimeException(
                 \sprintf(
-                    'elasticsearch-dama ne supporte pas les index FOSElastica configurés avec '
+                    'elasticsearch-test ne supporte pas les index FOSElastica configurés avec '
                     . '"use_alias: true" (index concerné(s) : "%s"). '
                     . 'Le suffixage de getIndex() bypass la logique d\'alias de FOSElastica, '
                     . 'ce qui entraînerait des erreurs silencieuses. '

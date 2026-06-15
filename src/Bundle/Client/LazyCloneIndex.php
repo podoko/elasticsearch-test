@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\Bundle\Client;
+namespace Podoko\ElasticsearchTest\Bundle\Client;
 
 use Elastica\Script\AbstractScript;
 use Elastica\Bulk\ResponseSet;
 use Elastica\Document;
 use Elastica\Response;
 use FOS\ElasticaBundle\Elastica\Index as FosIndex;
-use Podoko\ElasticsearchDama\StaticState;
-use Podoko\ElasticsearchDama\TestToken;
+use Podoko\ElasticsearchTest\StaticState;
+use Podoko\ElasticsearchTest\TestToken;
 
 /**
  * Proxy d'index à clonage paresseux.

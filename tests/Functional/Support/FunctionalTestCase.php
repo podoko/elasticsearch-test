@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\Tests\Functional\Support;
+namespace Podoko\ElasticsearchTest\Tests\Functional\Support;
 
-use Podoko\ElasticsearchDama\Tests\Functional\App\Kernel;
-use Podoko\ElasticsearchDama\Tests\Functional\Model\Post;
+use Podoko\ElasticsearchTest\Tests\Functional\App\Kernel;
+use Podoko\ElasticsearchTest\Tests\Functional\Model\Post;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**

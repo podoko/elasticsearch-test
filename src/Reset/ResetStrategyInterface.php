@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\Reset;
+namespace Podoko\ElasticsearchTest\Reset;
 
 /**
  * Contrat pour les stratégies de remise à zéro d'un index entre deux tests.

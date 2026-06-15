@@ -1,4 +1,4 @@
-elasticsearch_dama:
+elasticsearch_test:
     elasticsearch_url: '%env(ELASTICSEARCH_URL)%'
     managed_indexes:
         - posts

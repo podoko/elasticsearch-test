@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\Tests\Functional\Factory;
+namespace Podoko\ElasticsearchTest\Tests\Functional\Factory;
 
-use Podoko\ElasticsearchDama\Tests\Functional\Model\Article;
+use Podoko\ElasticsearchTest\Tests\Functional\Model\Article;
 use Zenstruck\Foundry\ObjectFactory;
 
 /**

@@ -20,7 +20,7 @@
 declare(strict_types=1);
 
 use Elastica\Document;
-use Podoko\ElasticsearchDama\Tests\Functional\App\Kernel;
+use Podoko\ElasticsearchTest\Tests\Functional\App\Kernel;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -85,8 +85,8 @@ if ($exitCode !== 0) {
 // 2. Pousser les fixtures via l'admin client.
 //    Le mapping est déjà créé par fos:elastica:reset ci-dessus.
 // -----------------------------------------------------------------------
-// StaticState est initialisé au boot du Kernel (PodokoElasticsearchDamaBundle::boot).
-$adminClient = \Podoko\ElasticsearchDama\StaticState::getAdminClient();
+// StaticState est initialisé au boot du Kernel (PodokoElasticsearchTestBundle::boot).
+$adminClient = \Podoko\ElasticsearchTest\StaticState::getAdminClient();
 
 $postsIndex = $adminClient->getIndex('posts');
 $postsIndex->addDocuments([

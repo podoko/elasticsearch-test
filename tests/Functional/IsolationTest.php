@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\Tests\Functional;
+namespace Podoko\ElasticsearchTest\Tests\Functional;
 
-use Podoko\ElasticsearchDama\Tests\Functional\Factory\PostFactory;
-use Podoko\ElasticsearchDama\Tests\Functional\Support\FunctionalTestCase;
+use Podoko\ElasticsearchTest\Tests\Functional\Factory\PostFactory;
+use Podoko\ElasticsearchTest\Tests\Functional\Support\FunctionalTestCase;
 
 /**
  * Vérifie l'isolation entre tests : les documents créés dans un test

@@ -1,4 +1,4 @@
-# elasticsearch-dama
+# elasticsearch-test
 
 Test isolation for Elasticsearch in Symfony + FOSElastica projects — inspired by [`dama/doctrine-test-bundle`](https://github.com/dmaicher/doctrine-test-bundle).
 
@@ -15,7 +15,7 @@ Each PHPUnit test runs against its own clean copy of the index. No `sleep()`, no
 ## Installation
 
 ```bash
-composer require --dev podoko/elasticsearch-dama
+composer require --dev podoko/elasticsearch-test
 ```
 
 ## Setup
@@ -26,15 +26,15 @@ composer require --dev podoko/elasticsearch-dama
 // config/bundles.php
 return [
     // ...
-    Podoko\ElasticsearchDama\Bundle\PodokoElasticsearchDamaBundle::class => ['test' => true],
+    Podoko\ElasticsearchTest\Bundle\PodokoElasticsearchTestBundle::class => ['test' => true],
 ];
 ```
 
 ### 2. Configure the bundle
 
 ```yaml
-# config/packages/test/elasticsearch_dama.yaml
-elasticsearch_dama:
+# config/packages/test/elasticsearch_test.yaml
+elasticsearch_test:
   elasticsearch_url: '%env(ELASTICSEARCH_URL)%'
 
   # List the FOSElastica index names to isolate.
@@ -49,7 +49,7 @@ elasticsearch_dama:
 ```xml
 <!-- phpunit.xml -->
 <extensions>
-  <bootstrap class="Podoko\ElasticsearchDama\PHPUnit\ElasticsearchDamaExtension"/>
+  <bootstrap class="Podoko\ElasticsearchTest\PHPUnit\ElasticsearchTestExtension"/>
 </extensions>
 ```
 

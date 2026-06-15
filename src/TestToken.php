@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama;
+namespace Podoko\ElasticsearchTest;
 
 /**
  * Résout le token worker courant.

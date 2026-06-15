@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\PHPUnit\Subscriber;
+namespace Podoko\ElasticsearchTest\PHPUnit\Subscriber;
 
 use PHPUnit\Event\TestSuite\Finished;
 use PHPUnit\Event\TestSuite\FinishedSubscriber;
-use Podoko\ElasticsearchDama\PHPUnit\ElasticsearchDamaExtension;
-use Podoko\ElasticsearchDama\StaticState;
+use Podoko\ElasticsearchTest\PHPUnit\ElasticsearchTestExtension;
+use Podoko\ElasticsearchTest\StaticState;
 
 /**
  * Retire le write-block sur les index sources en fin de suite PHPUnit (sortie propre).
@@ -21,7 +21,7 @@ final class TestSuiteFinishedSubscriber implements FinishedSubscriber
 {
     public function notify(Finished $event): void
     {
-        if (!ElasticsearchDamaExtension::isBootstrapped()) {
+        if (!ElasticsearchTestExtension::isBootstrapped()) {
             return;
         }
 

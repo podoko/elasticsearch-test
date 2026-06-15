@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\Tests\Unit;
+namespace Podoko\ElasticsearchTest\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Podoko\ElasticsearchDama\TestToken;
+use Podoko\ElasticsearchTest\TestToken;
 
 final class TestTokenTest extends TestCase
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\PHPUnit\Subscriber;
+namespace Podoko\ElasticsearchTest\PHPUnit\Subscriber;
 
 use PHPUnit\Event\Test\Prepared;
 use PHPUnit\Event\Test\PreparedSubscriber;

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\Tests\Functional;
+namespace Podoko\ElasticsearchTest\Tests\Functional;
 
 use Elastica\Query;
-use Podoko\ElasticsearchDama\Tests\Functional\Factory\PostFactory;
-use Podoko\ElasticsearchDama\Tests\Functional\Support\FunctionalTestCase;
+use Podoko\ElasticsearchTest\Tests\Functional\Factory\PostFactory;
+use Podoko\ElasticsearchTest\Tests\Functional\Support\FunctionalTestCase;
 
 /**
  * Vérifie que les mutations dans un test (suppression, modification) ne

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\Tests\Unit\Reset;
+namespace Podoko\ElasticsearchTest\Tests\Unit\Reset;
 
 use Elastica\Client;
 use Elastica\Request;
 use Elastica\Response;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Podoko\ElasticsearchDama\Reset\CloneResetStrategy;
+use Podoko\ElasticsearchTest\Reset\CloneResetStrategy;
 
 final class CloneResetStrategyTest extends TestCase
 {

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\PHPUnit\Subscriber;
+namespace Podoko\ElasticsearchTest\PHPUnit\Subscriber;
 
 use PHPUnit\Event\Test\Finished;
 use PHPUnit\Event\Test\FinishedSubscriber;
-use Podoko\ElasticsearchDama\PHPUnit\ElasticsearchDamaExtension;
-use Podoko\ElasticsearchDama\StaticState;
+use Podoko\ElasticsearchTest\PHPUnit\ElasticsearchTestExtension;
+use Podoko\ElasticsearchTest\StaticState;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**
@@ -18,7 +18,7 @@ final class TestFinishedSubscriber implements FinishedSubscriber
 {
     public function notify(Finished $event): void
     {
-        if (!ElasticsearchDamaExtension::isBootstrapped()) {
+        if (!ElasticsearchTestExtension::isBootstrapped()) {
             return;
         }
 

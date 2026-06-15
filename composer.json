@@ -1,5 +1,5 @@
 {
-    "name": "podoko/elasticsearch-dama",
+    "name": "podoko/elasticsearch-test",
     "description": "Elasticsearch test isolation for Symfony + FOSElastica — like dama/doctrine-test-bundle but for ES",
     "type": "symfony-bundle",
     "keywords": ["elasticsearch", "testing", "symfony", "fos-elastica", "phpunit", "isolation"],
@@ -28,12 +28,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Podoko\\ElasticsearchDama\\": "src/"
+            "Podoko\\ElasticsearchTest\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Podoko\\ElasticsearchDama\\Tests\\": "tests/"
+            "Podoko\\ElasticsearchTest\\Tests\\": "tests/"
         }
     },
     "extra": {

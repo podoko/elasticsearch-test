@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\Bundle\DependencyInjection;
+namespace Podoko\ElasticsearchTest\Bundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
- * Configuration du bundle elasticsearch_dama.
+ * Configuration du bundle elasticsearch_test.
  *
- * Exemple dans config/packages/test/elasticsearch_dama.yaml :
+ * Exemple dans config/packages/test/elasticsearch_test.yaml :
  *
- *   elasticsearch_dama:
+ *   elasticsearch_test:
  *     enabled: true
  *     elasticsearch_url: '%env(ELASTICSEARCH_URL)%'
  *     managed_indexes:
@@ -24,7 +24,7 @@ final class Configuration implements ConfigurationInterface
 {
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder('elasticsearch_dama');
+        $treeBuilder = new TreeBuilder('elasticsearch_test');
         $rootNode    = $treeBuilder->getRootNode();
 
         $rootNode

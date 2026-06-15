@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Podoko\ElasticsearchDama\Tests\Functional\App;
+namespace Podoko\ElasticsearchTest\Tests\Functional\App;
 
 use FOS\ElasticaBundle\FOSElasticaBundle;
-use Podoko\ElasticsearchDama\Bundle\PodokoElasticsearchDamaBundle;
+use Podoko\ElasticsearchTest\Bundle\PodokoElasticsearchTestBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -16,7 +16,7 @@ use Zenstruck\Foundry\ZenstruckFoundryBundle;
 /**
  * Kernel minimal pour les tests fonctionnels de la lib.
  *
- * Stack : FrameworkBundle + FOSElasticaBundle + PodokoElasticsearchDamaBundle + ZenstruckFoundryBundle.
+ * Stack : FrameworkBundle + FOSElasticaBundle + PodokoElasticsearchTestBundle + ZenstruckFoundryBundle.
  * Pas de Doctrine — les données sont poussées directement dans Elasticsearch
  * via le client FOSElastica (index.addDocuments()), avec Foundry en mode ObjectFactory.
  */
@@ -33,7 +33,7 @@ final class Kernel extends BaseKernel
         return [
             new FrameworkBundle(),
             new FOSElasticaBundle(),
-            new PodokoElasticsearchDamaBundle(),
+            new PodokoElasticsearchTestBundle(),
             new ZenstruckFoundryBundle(),
         ];
     }
@@ -42,7 +42,8 @@ final class Kernel extends BaseKernel
     {
         $loader->load(__DIR__ . '/config/framework.yaml');
         $loader->load(__DIR__ . '/config/fos_elastica.yaml');
-        $loader->load(__DIR__ . '/config/elasticsearch_dama.yaml');
+        $loader->load(__DIR__ . '/config/elasticsearch_test.yaml');
+        $loader->load(__DIR__ . '/config/services.yaml');
     }
 
     protected function build(ContainerBuilder $container): void
