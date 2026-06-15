@@ -2,4 +2,5 @@ elasticsearch_dama:
     elasticsearch_url: '%env(ELASTICSEARCH_URL)%'
     managed_indexes:
         - posts
+        - articles
     reset_strategy: clone

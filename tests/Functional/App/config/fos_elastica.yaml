@@ -16,3 +16,19 @@ fos_elastica:
                     type: keyword
                 body:
                     type: text
+        articles:
+            properties:
+                title:
+                    type: text
+                content:
+                    type: text
+                category:
+                    type: keyword
+                tags:
+                    type: keyword
+                author:
+                    type: keyword
+                publishedAt:
+                    type: date
+                views:
+                    type: integer

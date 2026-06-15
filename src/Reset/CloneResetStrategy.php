@@ -45,18 +45,18 @@ final class CloneResetStrategy implements ResetStrategyInterface
             $this->adminClient->request($targetName, Request::DELETE);
         }
 
-        // Clone source → worker (writable immédiatement).
+        // Clone source → worker (writable immédiatement, 0 replica pour rester green).
         $this->adminClient->request(
             "$indexName/_clone/$targetName",
             Request::POST,
-            ['settings' => ['index.blocks.write' => false]],
+            ['settings' => ['index.blocks.write' => false, 'index.number_of_replicas' => 0]],
         );
 
         $this->adminClient->request(
             "_cluster/health/$targetName",
             Request::GET,
             [],
-            ['wait_for_status' => 'yellow', 'timeout' => '5s'],
+            ['wait_for_status' => 'green', 'timeout' => '5s'],
         );
     }
 
