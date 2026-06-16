@@ -14,7 +14,7 @@ final class TestTokenTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->savedTestToken       = \getenv('TEST_TOKEN');
+        $this->savedTestToken = \getenv('TEST_TOKEN');
         $this->savedUniqueTestToken = \getenv('UNIQUE_TEST_TOKEN');
 
         TestToken::reset();
@@ -26,43 +26,43 @@ final class TestTokenTest extends TestCase
     {
         TestToken::reset();
 
-        $this->savedTestToken !== false
-            ? \putenv('TEST_TOKEN=' . $this->savedTestToken)
+        false !== $this->savedTestToken
+            ? \putenv('TEST_TOKEN='.$this->savedTestToken)
             : \putenv('TEST_TOKEN');
 
-        $this->savedUniqueTestToken !== false
-            ? \putenv('UNIQUE_TEST_TOKEN=' . $this->savedUniqueTestToken)
+        false !== $this->savedUniqueTestToken
+            ? \putenv('UNIQUE_TEST_TOKEN='.$this->savedUniqueTestToken)
             : \putenv('UNIQUE_TEST_TOKEN');
     }
 
-    public function test_default_token_is_one(): void
+    public function testDefaultTokenIsOne(): void
     {
         self::assertSame('1', TestToken::get());
     }
 
-    public function test_reads_test_token_env(): void
+    public function testReadsTestTokenEnv(): void
     {
         \putenv('TEST_TOKEN=3');
         self::assertSame('3', TestToken::get());
     }
 
-    public function test_falls_back_to_unique_test_token(): void
+    public function testFallsBackToUniqueTestToken(): void
     {
         \putenv('TEST_TOKEN=');
         \putenv('UNIQUE_TEST_TOKEN=abc-def');
         self::assertSame('abc-def', TestToken::get());
     }
 
-    public function test_sanitizes_invalid_characters(): void
+    public function testSanitizesInvalidCharacters(): void
     {
         \putenv('TEST_TOKEN=foo/bar:baz');
         self::assertSame('foo-bar-baz', TestToken::get());
     }
 
-    public function test_caches_resolved_value(): void
+    public function testCachesResolvedValue(): void
     {
         \putenv('TEST_TOKEN=5');
-        $first  = TestToken::get();
+        $first = TestToken::get();
         \putenv('TEST_TOKEN=99');
         $second = TestToken::get();
 

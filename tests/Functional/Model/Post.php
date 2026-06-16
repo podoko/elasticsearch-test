@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Podoko\ElasticsearchTest\Tests\Functional\Model;
 
 /**
- * DTO représentant un document "post" dans l'index Elasticsearch.
- * Pas d'entité Doctrine — ce DTO est sérialisé directement en document ES.
+ * DTO representing a 'post' document in the Elasticsearch index.
+ * No Doctrine entity — this DTO is serialized directly into an ES document.
  */
 final class Post
 {
@@ -15,19 +15,20 @@ final class Post
         public readonly string $title,
         public readonly string $status,
         public readonly string $body = '',
-    ) {}
+    ) {
+    }
 
     /**
-     * Retourne le document sous la forme attendue par Elastica\Document.
+     * Returns the document in the format expected by Elastica\Document.
      *
      * @return array<string, string>
      */
     public function toDocument(): array
     {
         return [
-            'title'  => $this->title,
+            'title' => $this->title,
             'status' => $this->status,
-            'body'   => $this->body,
+            'body' => $this->body,
         ];
     }
 }

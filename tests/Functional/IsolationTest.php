@@ -8,44 +8,44 @@ use Podoko\ElasticsearchTest\Tests\Functional\Factory\PostFactory;
 use Podoko\ElasticsearchTest\Tests\Functional\Support\FunctionalTestCase;
 
 /**
- * Vérifie l'isolation entre tests : les documents créés dans un test
- * ne sont pas visibles dans un autre test.
+ * Verifies isolation between tests: documents created in one test
+ * are not visible in another test.
  *
- * Chaque méthode indexe un nombre différent de documents et vérifie
- * que le total est exactement baseline + N (sans accumulation entre tests).
+ * Each method indexes a different number of documents and checks
+ * that the total is exactly baseline + N (no accumulation between tests).
  */
 final class IsolationTest extends FunctionalTestCase
 {
     private const BASELINE_COUNT = 3;
 
-    public function test_index_one_document_does_not_leak_into_other_tests(): void
+    public function testIndexOneDocumentDoesNotLeakIntoOtherTests(): void
     {
-        // Indexer 1 document supplémentaire
+        // Index 1 additional document
         $post = PostFactory::createOne(['status' => 'published']);
         $this->index($post);
 
         self::assertSame(
             self::BASELINE_COUNT + 1,
             $this->countAll(),
-            'Après indexation d\'1 doc, le total doit être baseline + 1.'
+            'After indexing 1 doc, the total must be baseline + 1.'
         );
     }
 
-    public function test_index_five_documents_does_not_leak_into_other_tests(): void
+    public function testIndexFiveDocumentsDoesNotLeakIntoOtherTests(): void
     {
-        // Indexer 5 documents supplémentaires
+        // Index 5 additional documents
         $posts = PostFactory::createMany(5);
         $this->index(...$posts);
 
         self::assertSame(
             self::BASELINE_COUNT + 5,
             $this->countAll(),
-            'Après indexation de 5 docs, le total doit être baseline + 5, '
-            . 'pas baseline + 6 (leak du test précédent).'
+            'After indexing 5 docs, the total must be baseline + 5, '
+            .'not baseline + 6 (leak from the previous test).'
         );
     }
 
-    public function test_index_ten_documents_does_not_leak_into_other_tests(): void
+    public function testIndexTenDocumentsDoesNotLeakIntoOtherTests(): void
     {
         $posts = PostFactory::createMany(10);
         $this->index(...$posts);
@@ -56,19 +56,19 @@ final class IsolationTest extends FunctionalTestCase
         );
     }
 
-    public function test_clean_clone_without_any_indexing(): void
+    public function testCleanCloneWithoutAnyIndexing(): void
     {
-        // Aucune indexation dans ce test — le total doit rester à la baseline
+        // No indexing in this test — the total must stay at the baseline
         self::assertSame(
             self::BASELINE_COUNT,
             $this->countAll(),
-            'Sans indexation, le total doit rester à la baseline.'
+            'Without indexing, the total must remain at the baseline.'
         );
     }
 
-    public function test_only_published_posts_are_indexed(): void
+    public function testOnlyPublishedPostsAreIndexed(): void
     {
-        // Fondation maîtrisée : 2 publiés + 3 drafts → seul le compte total varie
+        // Controlled baseline: 2 published + 3 drafts → only the total count changes
         $this->index(
             ...PostFactory::createMany(2, ['status' => 'published']),
             ...PostFactory::createMany(3, ['status' => 'draft']),

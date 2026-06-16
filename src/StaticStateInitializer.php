@@ -8,14 +8,15 @@ use Elastica\Client;
 use Podoko\ElasticsearchTest\Reset\ResetStrategyInterface;
 
 /**
- * Service Symfony dont le seul rôle est d'alimenter StaticState au boot du kernel.
- * L'injection se fait dans le constructeur (eager initialization lors du
- * premier accès au conteneur, avant les tests).
+ * Symfony service whose sole purpose is to populate StaticState at kernel boot.
+ * Injection happens in the constructor (eager initialization on first container access,
+ * before any test).
  */
 final class StaticStateInitializer
 {
     public function __construct(
         private readonly Client $adminClient,
+        /** @var string[] $managedIndexes */
         private readonly array $managedIndexes,
         private readonly ResetStrategyInterface $resetStrategy,
         private readonly string $elasticsearchUrl,
@@ -27,14 +28,14 @@ final class StaticStateInitializer
             elasticsearchUrl: $this->elasticsearchUrl,
         );
 
-        // Sous ParaTest, on évite le unlock entre les tests (race condition : Worker A
-        // pourrait déverrouiller la source pendant que Worker B est entre write-block et clone).
-        // Le setUpBeforeClass() appelle explicitement unlockSourceIndexes() avant tout test.
-        if (\getenv('PARATEST') === false) {
-            // Crash recovery : retire tout write-block résiduel d'une run précédente (SIGKILL).
+        // Under ParaTest, avoid unlocking between tests (race condition: Worker A
+        // could unlock the source while Worker B is between write-block and clone).
+        // setUpBeforeClass() explicitly calls unlockSourceIndexes() before any test.
+        if (false === \getenv('PARATEST')) {
+            // Crash recovery: remove any leftover write-block from a previous run (SIGKILL).
             StaticState::unlockSourceIndexes();
 
-            // Unlock en fin de suite propre (sortie normale ou dd()/exit()).
+            // Unlock at the end of a clean suite (normal exit or dd()/exit()).
             \register_shutdown_function(static function (): void {
                 StaticState::unlockSourceIndexes();
             });

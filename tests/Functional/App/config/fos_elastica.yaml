@@ -7,8 +7,8 @@ fos_elastica:
 
     indexes:
         posts:
-            # Pas de bloc 'persistence' (pas de Doctrine) — les documents sont
-            # poussés directement via le client Elastica.
+            # No 'persistence' block (no Doctrine) — documents are pushed
+            # directly via the Elastica client.
             properties:
                 title:
                     type: text

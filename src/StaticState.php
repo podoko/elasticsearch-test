@@ -8,17 +8,17 @@ use Elastica\Client;
 use Podoko\ElasticsearchTest\Reset\ResetStrategyInterface;
 
 /**
- * Registre statique central — équivalent du StaticDriver de dama/doctrine-test-bundle.
+ * Central static registry — equivalent of StaticDriver from dama/doctrine-test-bundle.
  *
- * Conçu pour être appelable depuis l'extension PHPUnit (hors conteneur Symfony)
- * via des méthodes statiques. Le conteneur Symfony alimente ce registre au boot
- * grâce à StaticStateInitializer.
+ * Designed to be callable from the PHPUnit extension (outside the Symfony container)
+ * via static methods. The Symfony container populates this registry at boot
+ * through StaticStateInitializer.
  */
 final class StaticState
 {
     private static bool $initialized = false;
 
-    /** @var string[] Noms logiques des index gérés (clés FOSElastica, sans token). */
+    /** @var string[] Logical names of managed indexes (FOSElastica keys, without token). */
     private static array $managedIndexes = [];
 
     private static ?ResetStrategyInterface $resetStrategy = null;
@@ -27,34 +27,35 @@ final class StaticState
 
     private static ?string $elasticsearchUrl = null;
 
-    /** @var array<string, true> Index logiques copiés pendant le test courant. */
+    /** @var array<string, true> Logical indexes cloned during the current test. */
     private static array $copiedIndexes = [];
 
     // -----------------------------------------------------------------------
-    // Bootstrap (appelé par StaticStateInitializer depuis le conteneur Symfony)
+    // Bootstrap (called by StaticStateInitializer from the Symfony container)
     // -----------------------------------------------------------------------
 
+    /** @param string[] $managedIndexes */
     public static function initialize(
         Client $adminClient,
         array $managedIndexes,
         ResetStrategyInterface $resetStrategy,
         string $elasticsearchUrl,
     ): void {
-        self::$adminClient      = $adminClient;
-        self::$managedIndexes   = $managedIndexes;
-        self::$resetStrategy    = $resetStrategy;
+        self::$adminClient = $adminClient;
+        self::$managedIndexes = $managedIndexes;
+        self::$resetStrategy = $resetStrategy;
         self::$elasticsearchUrl = $elasticsearchUrl;
-        self::$initialized      = true;
-        self::$copiedIndexes    = [];
+        self::$initialized = true;
+        self::$copiedIndexes = [];
     }
 
     // -----------------------------------------------------------------------
-    // Cycle de vie par test (appelé par les subscribers PHPUnit et LazyCloneIndex)
+    // Per-test lifecycle (called by PHPUnit subscribers and LazyCloneIndex)
     // -----------------------------------------------------------------------
 
     /**
-     * Vérifie si un clone a déjà été créé pour cet index dans le test courant.
-     * Appelé par LazyCloneIndex::getName() pour résoudre le nom physique de l'index.
+     * Returns true if a clone has already been created for this index in the current test.
+     * Called by LazyCloneIndex::getName() to resolve the physical index name.
      */
     public static function hasCopy(string $indexName): bool
     {
@@ -62,9 +63,9 @@ final class StaticState
     }
 
     /**
-     * Clone paresseux : crée le clone seed → worker pour cet index si ce n'est pas déjà fait.
-     * Appelé par LazyCloneIndex::ensureCopy() lors de la première opération d'écriture.
-     * Idempotent : un deuxième appel pour le même index est sans effet.
+     * Lazy clone: creates the source → worker clone for this index if not already done.
+     * Called by LazyCloneIndex::ensureCopy() on the first write operation.
+     * Idempotent: a second call for the same index is a no-op.
      */
     public static function copy(string $indexName): void
     {
@@ -79,13 +80,13 @@ final class StaticState
     }
 
     /**
-     * Appelé par TestFinishedSubscriber : supprime uniquement les clones créés pendant ce test.
+     * Called by TestFinishedSubscriber: deletes only the clones created during this test.
      */
     public static function rollbackTest(): void
     {
         self::assertInitialized();
 
-        $token    = TestToken::get();
+        $token = TestToken::get();
         $strategy = self::$resetStrategy;
 
         foreach (\array_keys(self::$copiedIndexes) as $indexName) {
@@ -96,13 +97,13 @@ final class StaticState
     }
 
     /**
-     * Retire le write-block posé sur tous les index sources.
-     * Appelé en fin de suite (propre), au boot suivant (SIGKILL recovery)
-     * et via register_shutdown_function (dd()/exit()).
+     * Removes the write-block placed on all source indexes.
+     * Called at suite end (clean exit), on the next boot (SIGKILL recovery),
+     * and via register_shutdown_function (dd()/exit()).
      *
-     * Sans effet si StaticState n'est pas initialisé (guard crash avant init).
-     * N'est pas exécuté sous ParaTest — chaque worker conserve le write-block
-     * jusqu'au prochain boot kernel, évitant toute race condition entre workers.
+     * No-op if StaticState is not initialized (crash guard before init).
+     * Not executed under ParaTest — each worker keeps the write-block
+     * until the next kernel boot, avoiding any race condition between workers.
      */
     public static function unlockSourceIndexes(): void
     {
@@ -118,7 +119,7 @@ final class StaticState
     }
 
     // -----------------------------------------------------------------------
-    // Accesseurs
+    // Accessors
     // -----------------------------------------------------------------------
 
     public static function isInitialized(): bool
@@ -147,33 +148,27 @@ final class StaticState
     }
 
     // -----------------------------------------------------------------------
-    // Réinitialisation (tests unitaires de la lib)
+    // Reset (library unit tests)
     // -----------------------------------------------------------------------
 
     public static function reset(): void
     {
-        self::$initialized      = false;
-        self::$managedIndexes   = [];
-        self::$resetStrategy    = null;
-        self::$adminClient      = null;
+        self::$initialized = false;
+        self::$managedIndexes = [];
+        self::$resetStrategy = null;
+        self::$adminClient = null;
         self::$elasticsearchUrl = null;
-        self::$copiedIndexes    = [];
+        self::$copiedIndexes = [];
     }
 
     // -----------------------------------------------------------------------
-    // Privé
+    // Private
     // -----------------------------------------------------------------------
 
     private static function assertInitialized(): void
     {
         if (!self::$initialized) {
-            throw new \LogicException(
-                \sprintf(
-                    '%s n\'est pas initialisé. Assurez-vous que le bundle est configuré '
-                    . 'et que StaticStateInitializer::initialize() a été appelé au démarrage.',
-                    self::class,
-                )
-            );
+            throw new \LogicException(\sprintf('%s is not initialized. Make sure the bundle is configured and that StaticStateInitializer::initialize() was called at startup.', self::class));
         }
     }
 }

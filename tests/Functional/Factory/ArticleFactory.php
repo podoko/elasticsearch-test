@@ -12,8 +12,8 @@ use Zenstruck\Foundry\ObjectFactory;
  */
 final class ArticleFactory extends ObjectFactory
 {
-    private const CATEGORIES = ['tech', 'science', 'sport', 'culture', 'politique', 'économie'];
-    private const TAGS       = ['php', 'python', 'docker', 'kubernetes', 'ia', 'cloud', 'linux', 'web', 'data', 'devops'];
+    private const CATEGORIES = ['tech', 'science', 'sport', 'culture', 'politics', 'economics'];
+    private const TAGS = ['php', 'python', 'docker', 'kubernetes', 'ai', 'cloud', 'linux', 'web', 'data', 'devops'];
 
     public static function class(): string
     {
@@ -23,14 +23,14 @@ final class ArticleFactory extends ObjectFactory
     protected function defaults(): array
     {
         return [
-            'id'          => self::faker()->uuid(),
-            'title'       => self::faker()->sentence(mt_rand(4, 10)),
-            'content'     => self::faker()->paragraphs(mt_rand(50, 100), true),
-            'category'    => self::faker()->randomElement(self::CATEGORIES),
-            'tags'        => self::faker()->randomElements(self::TAGS, mt_rand(1, 4)),
-            'author'      => self::faker()->name(),
+            'id' => self::faker()->uuid(),
+            'title' => self::faker()->sentence(mt_rand(4, 10)),
+            'content' => self::faker()->paragraphs(mt_rand(50, 100), true),
+            'category' => self::faker()->randomElement(self::CATEGORIES),
+            'tags' => self::faker()->randomElements(self::TAGS, mt_rand(1, 4)),
+            'author' => self::faker()->name(),
             'publishedAt' => self::faker()->dateTimeBetween('-2 years', 'now')->format('Y-m-d\TH:i:s'),
-            'views'       => self::faker()->numberBetween(0, 100000),
+            'views' => self::faker()->numberBetween(0, 100000),
         ];
     }
 }

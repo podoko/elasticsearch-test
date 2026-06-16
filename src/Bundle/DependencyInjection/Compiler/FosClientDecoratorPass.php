@@ -9,17 +9,17 @@ use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
- * CompilerPass qui :
- *   1. Détecte les index FOSElastica configurés avec use_alias: true et lève une exception
- *      explicite (comportement non supporté — voir §4 de l'architecture).
- *   2. Change la classe de tous les clients FOSElastica en RefreshForcingClient.
- *   3. Active le suffixage des index (setSuffixIndexes(true)) sur ces clients.
- *   4. Auto-découvre les index gérés si la liste est vide dans la configuration.
+ * CompilerPass that:
+ *   1. Detects FOSElastica indexes configured with use_alias: true and throws an explicit
+ *      exception (unsupported — see §4 of the architecture docs).
+ *   2. Changes the class of all FOSElastica clients to RefreshForcingClient.
+ *   3. Enables index suffixing (setSuffixIndexes(true)) on those clients.
+ *   4. Auto-discovers managed indexes when the config list is empty.
  *
- * Le suffixage effectif n'a lieu qu'au runtime, dans RefreshForcingClient::getIndex(),
- * et uniquement quand ElasticsearchTestExtension::isBootstrapped() est true —
- * c'est-à-dire uniquement sous PHPUnit. Les requêtes HTTP et commandes Symfony
- * en env de test ne sont pas affectées.
+ * Actual suffixing happens at runtime, inside RefreshForcingClient::getIndex(),
+ * and only when ElasticsearchTestExtension::isBootstrapped() is true —
+ * i.e. only under PHPUnit. HTTP requests and Symfony commands
+ * in the test environment are not affected.
  */
 final class FosClientDecoratorPass implements CompilerPassInterface
 {
@@ -30,14 +30,14 @@ final class FosClientDecoratorPass implements CompilerPassInterface
         }
 
         // -----------------------------------------------------------------------
-        // 1. Fail-fast sur use_alias: true
-        //    FOSElastica stocke la config de chaque index dans le premier argument
-        //    de 'fos_elastica.config_source.container'. On lit ce tableau directement.
+        // 1. Fail-fast on use_alias: true
+        //    FOSElastica stores each index config in the first argument
+        //    of 'fos_elastica.config_source.container'. We read that array directly.
         // -----------------------------------------------------------------------
         $this->assertNoUseAlias($container);
 
         // -----------------------------------------------------------------------
-        // 2. Décorer tous les clients FOSElastica
+        // 2. Decorate all FOSElastica clients
         // -----------------------------------------------------------------------
         foreach ($container->findTaggedServiceIds('fos_elastica.client') as $serviceId => $_tags) {
             if (!$container->hasDefinition($serviceId)) {
@@ -50,7 +50,7 @@ final class FosClientDecoratorPass implements CompilerPassInterface
         }
 
         // -----------------------------------------------------------------------
-        // 3. Auto-découverte des index gérés si la liste est vide
+        // 3. Auto-discover managed indexes when the list is empty
         // -----------------------------------------------------------------------
         /** @var string[] $managedIndexes */
         $managedIndexes = $container->getParameter('elasticsearch_test.managed_indexes');
@@ -59,11 +59,10 @@ final class FosClientDecoratorPass implements CompilerPassInterface
             $managedIndexes = $this->discoverAllFosIndexes($container);
             $container->setParameter('elasticsearch_test.managed_indexes', $managedIndexes);
         }
-
     }
 
     // -----------------------------------------------------------------------
-    // Privé
+    // Private
     // -----------------------------------------------------------------------
 
     private function assertNoUseAlias(ContainerBuilder $container): void
@@ -87,20 +86,11 @@ final class FosClientDecoratorPass implements CompilerPassInterface
         }
 
         if (!empty($aliasedIndexes)) {
-            throw new \RuntimeException(
-                \sprintf(
-                    'elasticsearch-test ne supporte pas les index FOSElastica configurés avec '
-                    . '"use_alias: true" (index concerné(s) : "%s"). '
-                    . 'Le suffixage de getIndex() bypass la logique d\'alias de FOSElastica, '
-                    . 'ce qui entraînerait des erreurs silencieuses. '
-                    . 'Désactivez use_alias pour ces index dans votre configuration de test '
-                    . '(config/packages/test/fos_elastica.yaml) ou excluez-les de managed_indexes.',
-                    \implode('", "', $aliasedIndexes)
-                )
-            );
+            throw new \RuntimeException(\sprintf('elasticsearch-test does not support FOSElastica indexes configured with "use_alias: true" (affected index(es): "%s"). Suffixing getIndex() bypasses FOSElastica\'s alias logic, which would cause silent errors. Disable use_alias for these indexes in your test configuration (config/packages/test/fos_elastica.yaml) or exclude them from managed_indexes.', \implode('", "', $aliasedIndexes)));
         }
     }
 
+    /** @return string[] */
     private function discoverAllFosIndexes(ContainerBuilder $container): array
     {
         $indexes = [];

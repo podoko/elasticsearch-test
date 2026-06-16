@@ -9,19 +9,18 @@ use Podoko\ElasticsearchTest\Tests\Functional\Model\Post;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**
- * Classe de base pour les tests fonctionnels de la lib.
+ * Base class for the library's functional tests.
  *
- * Prérequis : l'index `posts` doit exister et être peuplé avant de lancer la suite.
- * Lancer `php tests/Functional/App/bin/setup-test-indexes.php` une fois avant phpunit/paratest.
+ * Prerequisite: the `posts` index must exist and be populated before running the suite.
+ * Run `php tests/Functional/App/bin/setup-test-indexes.php` once before phpunit/paratest.
  *
- * Le clonage des index est paresseux : le clone source → worker n'est créé
- * que lors de la première opération d'écriture dans le test (via LazyCloneIndex).
- * Les lectures vont directement sur la source (posts).
+ * Index cloning is lazy: the source → worker clone is only created on the first write
+ * operation in the test (via LazyCloneIndex). Reads go directly to the source (posts).
  *
- * Cycle de vie :
- *   test() → première écriture → StaticState::copy() → clone créé
+ * Lifecycle:
+ *   test() → first write → StaticState::copy() → clone created
  *   tearDown() → ensureKernelShutdown()
- *   Test\Finished → StaticState::rollbackTest() → suppression des clones créés
+ *   Test\Finished → StaticState::rollbackTest() → clones deleted
  */
 abstract class FunctionalTestCase extends KernelTestCase
 {
@@ -31,7 +30,7 @@ abstract class FunctionalTestCase extends KernelTestCase
     }
 
     // -----------------------------------------------------------------------
-    // Helpers pour les cas de test
+    // Test case helpers
     // -----------------------------------------------------------------------
 
     protected function indexer(): PostIndexer
@@ -40,7 +39,7 @@ abstract class FunctionalTestCase extends KernelTestCase
     }
 
     /**
-     * Indexe un ou plusieurs Post dans l'index de travail et force un refresh.
+     * Indexes one or more Posts into the worker index and forces a refresh.
      */
     protected function index(Post ...$posts): void
     {
@@ -48,7 +47,7 @@ abstract class FunctionalTestCase extends KernelTestCase
     }
 
     /**
-     * Retourne le nombre total de documents dans l'index de travail.
+     * Returns the total number of documents in the worker index.
      */
     protected function countAll(): int
     {
@@ -56,7 +55,7 @@ abstract class FunctionalTestCase extends KernelTestCase
     }
 
     /**
-     * Supprime un document par id et force un refresh.
+     * Deletes a document by id and forces a refresh.
      */
     protected function deletePost(string $id): void
     {

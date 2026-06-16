@@ -8,11 +8,11 @@ use PHPUnit\Event\Test\Prepared;
 use PHPUnit\Event\Test\PreparedSubscriber;
 
 /**
- * Appelé avant chaque test.
+ * Called before each test.
  *
- * Le clonage des index est désormais paresseux : LazyCloneIndex crée le clone
- * seed → worker uniquement lors de la première opération d'écriture dans le test.
- * Ce subscriber n'a donc plus besoin de démarrer le kernel ni de cloner quoi que ce soit.
+ * Index cloning is now lazy: LazyCloneIndex creates the source → worker clone
+ * only on the first write operation in the test.
+ * This subscriber therefore no longer needs to boot the kernel or clone anything.
  */
 final class TestPreparedSubscriber implements PreparedSubscriber
 {

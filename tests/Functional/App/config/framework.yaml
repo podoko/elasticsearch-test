@@ -3,6 +3,6 @@ framework:
     test: true
     http_method_override: false
 
-    # Cache en mémoire pour les tests (évite la création de fichiers cache)
+    # In-memory cache for tests (avoids creating cache files)
     cache:
         app: cache.adapter.array

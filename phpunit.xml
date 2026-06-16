@@ -10,32 +10,32 @@
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
         </testsuite>
-        <!-- Nécessite Elasticsearch actif sur ELASTICSEARCH_URL (docker compose up -d) -->
+        <!-- Requires Elasticsearch running on ELASTICSEARCH_URL (docker compose up -d) -->
         <testsuite name="Functional">
             <directory>tests/Functional</directory>
         </testsuite>
     </testsuites>
 
     <!--
-        Extension elasticsearch-test — active le suffixage runtime des index FOSElastica.
-        Toute la configuration (URL, index gérés, fixtures) vient du bundle Symfony
-        (tests/Functional/App/config/elasticsearch_test.yaml) et non de ces paramètres.
+        elasticsearch-test extension — activates runtime suffixing of FOSElastica indexes.
+        All configuration (URL, managed indexes, fixtures) comes from the Symfony bundle
+        (tests/Functional/App/config/elasticsearch_test.yaml) and not from these parameters.
     -->
     <extensions>
         <bootstrap class="Podoko\ElasticsearchTest\PHPUnit\ElasticsearchTestExtension"/>
-        <!-- Foundry v2.9+ requiert son extension pour gérer le cycle de vie des factories -->
+        <!-- Foundry v2.9+ requires its extension to manage the factory lifecycle -->
         <bootstrap class="Zenstruck\Foundry\PHPUnit\FoundryExtension"/>
     </extensions>
 
     <php>
         <env name="APP_ENV" value="test"/>
         <env name="APP_SECRET" value="test-secret"/>
-        <!-- URL complète pour le client admin (PodokoElasticsearchTestExtension) -->
+        <!-- Full URL for the admin client (PodokoElasticsearchTestExtension) -->
         <env name="ELASTICSEARCH_URL" value="http://localhost:9200"/>
-        <!-- Host/port séparés pour FOSElastica (fos_elastica.yaml mini-kernel) -->
+        <!-- Separate host/port for FOSElastica (fos_elastica.yaml mini-kernel) -->
         <env name="ELASTICSEARCH_HOST" value="localhost"/>
         <env name="ELASTICSEARCH_PORT" value="9200"/>
-        <!-- Pour ParaTest : chaque worker reçoit TEST_TOKEN automatiquement -->
+        <!-- For ParaTest: each worker receives TEST_TOKEN automatically -->
     </php>
 
     <source>

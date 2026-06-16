@@ -18,19 +18,20 @@ final class Article
         public readonly string $author,
         public readonly string $publishedAt,
         public readonly int $views,
-    ) {}
+    ) {
+    }
 
     /** @return array<string, mixed> */
     public function toDocument(): array
     {
         return [
-            'title'       => $this->title,
-            'content'     => $this->content,
-            'category'    => $this->category,
-            'tags'        => $this->tags,
-            'author'      => $this->author,
+            'title' => $this->title,
+            'content' => $this->content,
+            'category' => $this->category,
+            'tags' => $this->tags,
+            'author' => $this->author,
             'publishedAt' => $this->publishedAt,
-            'views'       => $this->views,
+            'views' => $this->views,
         ];
     }
 }

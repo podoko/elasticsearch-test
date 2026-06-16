@@ -9,25 +9,25 @@ use FOS\ElasticaBundle\Elastica\Client as FosClient;
 use Podoko\ElasticsearchTest\PHPUnit\ElasticsearchTestExtension;
 
 /**
- * Sous-classe du client FOSElastica qui suffixe getIndex() avec le token worker PHPUnit.
+ * FOSElastica client subclass that suffixes getIndex() with the PHPUnit worker token.
  *
- * On étend FOS\ElasticaBundle\Elastica\Client (et non Elastica\Client) pour conserver :
- * - le cache d'index ($indexCache) évitant la recréation d'objets Index
- * - l'intégration Stopwatch (profiler Symfony)
- * - les événements Symfony (PreElasticaRequestEvent, PostElasticaRequestEvent…)
- * - le logging ElasticaLogger
+ * Extends FOS\ElasticaBundle\Elastica\Client (not Elastica\Client) to preserve:
+ * - the index cache ($indexCache) avoiding Index object recreation
+ * - the Stopwatch integration (Symfony profiler)
+ * - Symfony events (PreElasticaRequestEvent, PostElasticaRequestEvent…)
+ * - ElasticaLogger logging
  *
- * Le suffixage n'est actif que lorsque ElasticsearchTestExtension::isBootstrapped()
- * est true — uniquement sous PHPUnit. Une requête HTTP ou une commande Symfony en
- * APP_ENV=test ne déclenchent pas le bootstrap → comportement normal sans redirection.
+ * Suffixing is only active when ElasticsearchTestExtension::isBootstrapped()
+ * is true — only under PHPUnit. An HTTP request or a Symfony command in
+ * APP_ENV=test does not trigger bootstrap → normal behavior without redirection.
  *
- * Non final pour permettre aux projets ayant un client personnalisé de sous-classer.
+ * Not final to allow projects with a custom client to subclass.
  */
 class RefreshForcingClient extends FosClient
 {
     /**
-     * Active le suffixage des index pour ce client.
-     * Positionné à true par FosClientDecoratorPass sur les clients FOSElastica.
+     * Enables index suffixing for this client.
+     * Set to true by FosClientDecoratorPass on FOSElastica clients.
      */
     private bool $suffixIndexes = false;
 
@@ -37,15 +37,15 @@ class RefreshForcingClient extends FosClient
     }
 
     /**
-     * Retourne un LazyCloneIndex si le suffixage est actif, un index normal sinon.
+     * Returns a LazyCloneIndex when suffixing is active, a regular index otherwise.
      *
-     * Le LazyCloneIndex pointe sur le seed (posts_seed) par défaut et ne crée le clone
-     * worker (posts_<token>) qu'à la première opération d'écriture. Cela évite de cloner
-     * tous les index au début de chaque test, y compris ceux que le test ne touche pas.
+     * LazyCloneIndex points to the source (posts) by default and only creates the worker
+     * clone (posts_<token>) on the first write. This avoids cloning all indexes at the
+     * start of each test, including those the test never writes to.
      *
-     * Condition d'activation (identiques à l'ancienne logique de suffixage) :
-     *   1. Ce client est configuré pour suffixer ($suffixIndexes = true).
-     *   2. L'extension PHPUnit est bootstrappée (on est sous PHPUnit/ParaTest).
+     * Activation conditions:
+     *   1. This client is configured to suffix ($suffixIndexes = true).
+     *   2. The PHPUnit extension is bootstrapped (running under PHPUnit/ParaTest).
      */
     public function getIndex(string $name): BaseIndex
     {
